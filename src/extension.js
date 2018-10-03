@@ -1,10 +1,21 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require("vscode");
+const globalTunnel = require('global-tunnel-ng');
 //const express = require("express");
 //const app = express();
 let log = vscode.window.createOutputChannel("xmake/log");
 log.show();
+  // 
+console.log("http.proxy:"+vscode.workspace.getConfiguration("http").get('proxy'));
+if(vscode.workspace.getConfiguration("http").get('proxy')){
+  globalTunnel.initialize({
+    host: "192.168.1.30",
+    port: 8080
+    //proxyAuth: 'userId:password', // optional authentication
+    //sockets: 50 // optional pool size for each http and https
+  }); 
+}
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -12,6 +23,8 @@ function activate(context) {
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
   console.log('Congratulations, your extension "xart" is now active!');
+
+
 
   require("./app");
 

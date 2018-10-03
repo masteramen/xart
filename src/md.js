@@ -1,8 +1,10 @@
-import read from "node-readability";
-import h2m from "h2m";
-import fs from "fs";
-import { translateStr, translatePure } from "./translator";
-import md5 from "./md5";
+const read =require ("node-readability");
+const h2m =require ( "h2m");
+const fs =require ( "fs");
+const vscode = require("vscode");
+
+const { translateStr, translatePure } =require ("./translator");
+const md5 =require ("./md5");
 
 const { exec } = require("child_process");
 
@@ -19,14 +21,13 @@ function formatDateTime(date) {
   )}-${formate2(date.getDate())}`;
   return `${dateStr} ${timeStr}  +0800`;
 }
-module.exports = function tomd(url) {
+module.exports = function tomd(url,draftsFolder) {
   return new Promise((resolve, reject) => {
     console.log(url);
     if (url) {
       read(
         url,
         {
-          // proxy: "http://192.168.1.30:8080/",
           "User-Agent":
             "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36",
           Referer: url
@@ -71,7 +72,7 @@ published: false
 ${content.trim()}
 {% endraw %}
 `;
-            const draftFolder = `jekyll/_drafts/${fileName}/`;
+            const draftFolder = `${draftsFolder}${fileName}/`;
             const filePath = `${draftFolder}${article.title.replace(
               /[/\\]/g,
               " "
@@ -81,8 +82,11 @@ ${content.trim()}
             }
             console.log(`filePaht:${filePath}`);
             fs.writeFileSync(filePath, body);
-
-            exec(`code "${filePath}"`, (err, stdout, stderr) => {});
+            var openPath = vscode.Uri.file(filePath);
+            vscode.workspace.openTextDocument(openPath).then(doc => {
+              vscode.window.showTextDocument(doc);
+            });
+           // exec(`code "${filePath}"`, (err, stdout, stderr) => {});
           })();
         }
       );

@@ -7,14 +7,16 @@ const fm = require("front-matter");
 const request = require("request");
 const shell = require("shelljs");
 const glob = require("glob");
+const userHome = require('user-home');
+const vscode = require("vscode");
 
-const jekyllPosts = "jekyll/_posts";
+const postsFolder = userHome+"/git/jekyll/_posts/";
+const draftsFolder = userHome+"/git/jekyll/_drafts/";
 
-// const globalTunnel = require('global-tunnel-ng');
 const md5 = require("./md5");
 const md = require("./md");
 const translatorCn = require("./translator_cn");
-
+// const globalTunnel = require('global-tunnel-ng');
 // http://proxy-tmg.wb.devb.hksarg:8080/
 /* globalTunnel.initialize({
   //host: "192.168.1.30",
@@ -43,9 +45,12 @@ function getPostFile(dir) {
 }
 const app = express();
 // app.use(express.static('public'))
-
+var currentPath = process.cwd();
+console.log(`currentPath:${currentPath}`);
+console.log(__dirname);
 app.use(express.static(path.join(__dirname, "public")));
 app.set("view engine", "pug");
+app.set('views', path.join(__dirname, '/views'));
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
@@ -61,19 +66,23 @@ app.get("/act", (req, res) => {
   console.log(url);
 
   (async () => {
-    const first = glob.sync(`${jekyllPosts}/**/*${md5(url)}.md`);
+    const first = glob.sync(`${draftsFolder}/**/*${md5(url)}.md`).concat(glob.sync(`${postsFolder}/**/*${md5(url)}.md`));
     if (first.length > 0) {
       console.log(first[0]);
       const result =
         "<html><head><script>history.go(-2);</script></head></html>";
       res.send(result);
-      exec(`code ${first[0]}`);
+      var openPath = vscode.Uri.file(first[0]);
+vscode.workspace.openTextDocument(openPath).then(doc => {
+  vscode.window.showTextDocument(doc);
+});
+     // exec(`code ${first[0]}`);
     } else {
-      console.log(md);
-      md(url, req.query.lang);
       const result =
-        "<html><head><script>history.go(-2);</script></head></html>";
-      res.send(result);
+      "<html><head><script>history.go(-2);</script></head></html>";
+    res.send(result);
+      md(url,draftsFolder);
+
     }
   })();
 });
@@ -87,7 +96,7 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  const targetPath = "jekyll/_drafts";
+  const targetPath = draftsFolder;
   // var files = fs.readdirSync(targetPath);
   const files = fs
     .readdirSync(targetPath)
@@ -108,7 +117,7 @@ app.get("/", (req, res) => {
 app.get("/edit", (req, res) => {
   console.log(req.query.fileName);
 
-  const targetPath = "jekyll/_drafts";
+  const targetPath = draftsFolder;
 
   const filename = req.query.fileName;
   const filePath = path.join(targetPath, filename);
@@ -141,7 +150,7 @@ function getImageMd5FileName(url) {
   }
   return `${md5(url)}${subfix}`;
 }
-const watcher = chokidar.watch("jekyll/_drafts", {
+const watcher = chokidar.watch(draftsFolder, {
   ignored: /[/\\]\./,
   persistent: true
 });
@@ -163,8 +172,8 @@ watcher
         let { date } = postfm.attributes;
         date = new Date(date);
 
-        const folder = `jekyll/${jekyllPosts}/${date.getFullYear()}/${fileName}/`;
-        const draftFolder = `jekyll/_drafts/${fileName}/`;
+        const folder = `${postsFolder}/${date.getFullYear()}/${fileName}/`;
+        const draftFolder = `${draftsFolder}${fileName}/`;
         const postFileName = `${date.getFullYear()}-${`0${date.getMonth()}`.substr(
           -2,
           2
