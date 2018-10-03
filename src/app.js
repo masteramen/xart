@@ -7,17 +7,17 @@ const fm = require("front-matter");
 const request = require("request");
 const shell = require("shelljs");
 const glob = require("glob");
-const userHome = require('user-home');
+const userHome = require("user-home");
 const vscode = require("vscode");
 
-const postsFolder = userHome+"/git/jekyll/_posts/";
-const draftsFolder = userHome+"/git/jekyll/_drafts/";
+const jekyllHome = userHome + "/git/jekyll/";
+const postsFolder = `${jekyllHome}_posts/`;
+const draftsFolder = `${jekyllHome}/_drafts/`;
 
 const md5 = require("./md5");
 const md = require("./md");
 const translatorCn = require("./translator_cn");
 // const globalTunnel = require('global-tunnel-ng');
-// http://proxy-tmg.wb.devb.hksarg:8080/
 /* globalTunnel.initialize({
   //host: "192.168.1.30",
   //port: 8080
@@ -50,7 +50,12 @@ console.log(`currentPath:${currentPath}`);
 console.log(__dirname);
 app.use(express.static(path.join(__dirname, "public")));
 app.set("view engine", "pug");
-app.set('views', path.join(__dirname, '/views'));
+app.set("views", path.join(__dirname, "/views"));
+
+setTimeout(() => {
+  shell.exec("git pull ", { cwd: __dirname });
+  shell.exec("git pull ", { cwd: jekyllHome });
+}, 3000);
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
@@ -66,23 +71,24 @@ app.get("/act", (req, res) => {
   console.log(url);
 
   (async () => {
-    const first = glob.sync(`${draftsFolder}/**/*${md5(url)}.md`).concat(glob.sync(`${postsFolder}/**/*${md5(url)}.md`));
+    const first = glob
+      .sync(`${draftsFolder}/**/*${md5(url)}.md`)
+      .concat(glob.sync(`${postsFolder}/**/*${md5(url)}.md`));
     if (first.length > 0) {
       console.log(first[0]);
       const result =
         "<html><head><script>history.go(-2);</script></head></html>";
       res.send(result);
       var openPath = vscode.Uri.file(first[0]);
-vscode.workspace.openTextDocument(openPath).then(doc => {
-  vscode.window.showTextDocument(doc);
-});
-     // exec(`code ${first[0]}`);
+      vscode.workspace.openTextDocument(openPath).then(doc => {
+        vscode.window.showTextDocument(doc);
+      });
+      // exec(`code ${first[0]}`);
     } else {
       const result =
-      "<html><head><script>history.go(-2);</script></head></html>";
-    res.send(result);
-      md(url,draftsFolder);
-
+        "<html><head><script>history.go(-2);</script></head></html>";
+      res.send(result);
+      md(url, draftsFolder);
     }
   })();
 });
@@ -142,7 +148,7 @@ app.get("/edit", (req, res) => {
   res.send(result);
 });
 
-app.listen(3888, () => console.log("Example app listening on port 3000!"));
+app.listen(3888, () => console.log("Example app listening on port 3888!"));
 function getImageMd5FileName(url) {
   let subfix = url.split(".").pop();
   if (subfix.length > 4) {
@@ -297,8 +303,16 @@ watcher
   });
 
 function build(time) {
+  console.log(`git commit -am "auto commit ${new Date()}"`);
+  shell.exec(`git add .`, {
+    cwd: jekyllHome
+  });
+  let ret = shell.exec(`git commit -am "auto commit ${new Date()}"`, {
+    cwd: jekyllHome
+  });
+  shell.exec(`git push`, { cwd: jekyllHome });
+
   setTimeout(() => {
-    shell.exec(`./build.sh`);
     build(time);
   }, time);
 }
