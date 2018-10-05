@@ -2,6 +2,7 @@ const read =require ("node-readability");
 const h2m =require ( "h2m");
 const fs =require ( "fs");
 const vscode = require("vscode");
+const sanitize = require("sanitize-filename");
 
 const { translateStr, translatePure } =require ("./translator");
 const md5 =require ("./md5");
@@ -73,7 +74,7 @@ ${content.trim()}
 {% endraw %}
 `;
             const draftFolder = `${draftsFolder}${fileName}/`;
-            const filePath = `${draftFolder}${article.title.replace(
+            const filePath = `${draftFolder}${sanitize(article.title).replace(
               /[/\\]/g,
               " "
             )}.md`;

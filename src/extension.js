@@ -16,9 +16,9 @@ if (vscode.workspace.getConfiguration("http").get("proxy")) {
   const httpProxyUrl = new URL(
     vscode.workspace.getConfiguration("http").get("proxy")
   );
-
+  console.log(httpProxyUrl.hostname,httpProxyUrl.port);
   globalTunnel.initialize({
-    host: httpProxyUrl.host,
+    host: httpProxyUrl.hostname,
     port: parseInt(httpProxyUrl.port)
     //proxyAuth: 'userId:password', // optional authentication
     //sockets: 50 // optional pool size for each http and https

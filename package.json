@@ -48,6 +48,7 @@
     "node-readability": "git+https://github.com/masteramen/readability.git",
     "pug": "^2.0.3",
     "request": "^2.88.0",
+    "sanitize-filename": "^1.6.1",
     "shelljs": "^0.8.2",
     "user-home": "^2.0.0",
     "yaml-front-matter": "^4.0.0"
