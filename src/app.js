@@ -7,15 +7,11 @@ const fm = require("front-matter");
 const request = require("request");
 const shell = require("shelljs");
 const glob = require("glob");
-const userHome = require("user-home");
 const vscode = require("vscode");
-
-const jekyllHome = userHome + "/git/jekyll/";
-const postsFolder = `${jekyllHome}_posts/`;
-const draftsFolder = `${jekyllHome}/_drafts/`;
+const { jekyllHome, postsFolder, draftsFolder } = require("./config");
 
 const md5 = require("./md5");
-const md = require("./md");
+const { tomd: md } = require("./md");
 const translatorCn = require("./translator_cn");
 // const globalTunnel = require('global-tunnel-ng');
 /* globalTunnel.initialize({
@@ -276,7 +272,8 @@ watcher
               shell.rm(folder + it);
             });
         } else if (published === "deleted") {
-          shell.rm("-rf", filePath);
+          console.log(`delete folder ${path.dirname(filePath)}`);
+          shell.rm("-rf", path.dirname(filePath));
         }
         // console.log(postfm);
       } catch (e) {

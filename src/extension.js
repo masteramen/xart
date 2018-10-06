@@ -3,6 +3,8 @@
 const vscode = require("vscode");
 const globalTunnel = require("global-tunnel-ng");
 const { URL } = require("url");
+const { writeOpenArticle } = require("./md");
+const { draftsFolder } = require("./config");
 
 //const express = require("express");
 //const app = express();
@@ -16,7 +18,7 @@ if (vscode.workspace.getConfiguration("http").get("proxy")) {
   const httpProxyUrl = new URL(
     vscode.workspace.getConfiguration("http").get("proxy")
   );
-  console.log(httpProxyUrl.hostname,httpProxyUrl.port);
+  console.log(httpProxyUrl.hostname, httpProxyUrl.port);
   globalTunnel.initialize({
     host: httpProxyUrl.hostname,
     port: parseInt(httpProxyUrl.port)
@@ -55,10 +57,32 @@ function activate(context) {
     }
   );
 
-  context.subscriptions.push(disposable); 
-  let newPost = vscode.commands.registerCommand("extension.newPost",function(){
-    
-  });
+  context.subscriptions.push(disposable);
+  let newPost = vscode.commands.registerCommand(
+    "extension.newPost",
+    function() {
+      console.log("newPost");
+      let date = new Date();
+      let fileName = [
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate(),
+        parseInt("" + Math.random() * 100)
+      ]
+        .map(e => ("0" + e).substr(-2, 2))
+        .join("");
+      writeOpenArticle(
+        fileName,
+        "",
+        "new post",
+        "new post",
+        new Date(),
+        "zh_CN",
+        "",
+        draftsFolder
+      );
+    }
+  );
   context.subscriptions.push(newPost);
 }
 exports.activate = activate;

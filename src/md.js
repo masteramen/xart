@@ -1,11 +1,11 @@
-const read =require ("node-readability");
-const h2m =require ( "h2m");
-const fs =require ( "fs");
+const read = require("node-readability");
+const h2m = require("h2m");
+const fs = require("fs");
 const vscode = require("vscode");
 const sanitize = require("sanitize-filename");
 
-const { translateStr, translatePure } =require ("./translator");
-const md5 =require ("./md5");
+const { translateStr, translatePure } = require("./translator");
+const md5 = require("./md5");
 
 const { exec } = require("child_process");
 
@@ -22,7 +22,56 @@ function formatDateTime(date) {
   )}-${formate2(date.getDate())}`;
   return `${dateStr} ${timeStr}  +0800`;
 }
-module.exports = function tomd(url,draftsFolder) {
+
+function writeOpenArticle(
+  fileName,
+  url,
+  cnTitle,
+  title,
+  date,
+  lang,
+  content,
+  draftsFolder
+) {
+  const body = articleContent(
+    cnTitle,
+    title,
+    date,
+    url,
+    fileName,
+    lang,
+    content
+  );
+  const draftFolder = `${draftsFolder}${fileName}/`;
+  const filePath = `${draftFolder}${sanitize(title).replace(/[/\\]/g, " ")}.md`;
+  if (!fs.existsSync(draftFolder)) {
+    fs.mkdirSync(draftFolder);
+  }
+  console.log(`filePaht:${filePath}`);
+  fs.writeFileSync(filePath, body);
+  var openPath = vscode.Uri.file(filePath);
+  vscode.workspace.openTextDocument(openPath).then(doc => {
+    vscode.window.showTextDocument(doc);
+  });
+}
+
+function articleContent(cnTitle, title, date, url, fileName, lang, content) {
+  return `---
+layout: post
+title:  "${cnTitle}"
+title2:  "${title}"
+date:   ${formatDateTime(date)}
+source:  "${url}"
+fileName:  "${fileName}"
+lang:  "${lang}"
+published: false
+---
+{% raw %}
+${content.trim()}
+{% endraw %}
+`;
+}
+function tomd(url, draftsFolder) {
   return new Promise((resolve, reject) => {
     console.log(url);
     if (url) {
@@ -57,37 +106,18 @@ module.exports = function tomd(url,draftsFolder) {
             cnTitle = cnTitle.replace(/[\n\r]/g, "");
             console.log(content);
             const date = new Date();
-
             const fileName = md5(url);
-            const body = `---
-layout: post
-title:  "${cnTitle}"
-title2:  "${article.title}"
-date:   ${formatDateTime(date)}
-source:  "${url}"
-fileName:  "${fileName}"
-lang:  "${lang}"
-published: false
----
-{% raw %}
-${content.trim()}
-{% endraw %}
-`;
-            const draftFolder = `${draftsFolder}${fileName}/`;
-            const filePath = `${draftFolder}${sanitize(article.title).replace(
-              /[/\\]/g,
-              " "
-            )}.md`;
-            if (!fs.existsSync(draftFolder)) {
-              fs.mkdirSync(draftFolder);
-            }
-            console.log(`filePaht:${filePath}`);
-            fs.writeFileSync(filePath, body);
-            var openPath = vscode.Uri.file(filePath);
-            vscode.workspace.openTextDocument(openPath).then(doc => {
-              vscode.window.showTextDocument(doc);
-            });
-           // exec(`code "${filePath}"`, (err, stdout, stderr) => {});
+            writeOpenArticle(
+              fileName,
+              url,
+              cnTitle,
+              article.title,
+              date,
+              lang,
+              content,
+              draftsFolder
+            );
+            // exec(`code "${filePath}"`, (err, stdout, stderr) => {});
           })();
         }
       );
@@ -95,4 +125,6 @@ ${content.trim()}
       return reject(`fail: ${url}`);
     }
   });
-};
+}
+
+module.exports = { tomd, writeOpenArticle };
