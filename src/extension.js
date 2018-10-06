@@ -55,7 +55,11 @@ function activate(context) {
     }
   );
 
-  context.subscriptions.push(disposable);
+  context.subscriptions.push(disposable); 
+  let newPost = vscode.commands.registerCommand("extension.newPost",function(){
+    
+  });
+  context.subscriptions.push(newPost);
 }
 exports.activate = activate;
 

@@ -20,6 +20,10 @@
       {
         "command": "extension.sayHello",
         "title": "Hello World"
+      },
+      {
+        "command": "extension.newPost",
+        "title": "Create New Post"
       }
     ]
   },
