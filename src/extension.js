@@ -5,6 +5,7 @@ const globalTunnel = require("global-tunnel-ng");
 const { URL } = require("url");
 const { writeOpenArticle } = require("./md");
 const { draftsFolder } = require("./config");
+const { open } = require("./vsfun");
 
 //const express = require("express");
 //const app = express();
@@ -71,7 +72,7 @@ function activate(context) {
       ]
         .map(e => ("0" + e).substr(-2, 2))
         .join("");
-      writeOpenArticle(
+      let filePath = writeOpenArticle(
         fileName,
         "",
         "new post",
@@ -81,6 +82,7 @@ function activate(context) {
         "",
         draftsFolder
       );
+      open(filePath);
     }
   );
   context.subscriptions.push(newPost);

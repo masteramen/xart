@@ -1,13 +1,10 @@
 const read = require("node-readability");
 const h2m = require("h2m");
 const fs = require("fs");
-const vscode = require("vscode");
 const sanitize = require("sanitize-filename");
 
 const { translateStr, translatePure } = require("./translator");
 const md5 = require("./md5");
-
-const { exec } = require("child_process");
 
 function formate2(d) {
   return `0${d}`.substr(-2, 2);
@@ -18,7 +15,7 @@ function formatDateTime(date) {
     date.getMinutes()
   )}:${formate2(date.getSeconds())}`;
   const dateStr = `${date.getFullYear()}-${formate2(
-    date.getMonth()
+    date.getMonth() + 1
   )}-${formate2(date.getDate())}`;
   return `${dateStr} ${timeStr}  +0800`;
 }
@@ -31,7 +28,9 @@ function writeOpenArticle(
   date,
   lang,
   content,
-  draftsFolder
+  draftsFolder,
+  published,
+  permalink
 ) {
   const body = articleContent(
     cnTitle,
@@ -40,7 +39,9 @@ function writeOpenArticle(
     url,
     fileName,
     lang,
-    content
+    content,
+    published,
+    permalink
   );
   const draftFolder = `${draftsFolder}${fileName}/`;
   const filePath = `${draftFolder}${sanitize(title).replace(/[/\\]/g, " ")}.md`;
@@ -49,13 +50,20 @@ function writeOpenArticle(
   }
   console.log(`filePaht:${filePath}`);
   fs.writeFileSync(filePath, body);
-  var openPath = vscode.Uri.file(filePath);
-  vscode.workspace.openTextDocument(openPath).then(doc => {
-    vscode.window.showTextDocument(doc);
-  });
+  return filePath;
 }
 
-function articleContent(cnTitle, title, date, url, fileName, lang, content) {
+function articleContent(
+  cnTitle,
+  title,
+  date,
+  url,
+  fileName,
+  lang,
+  content,
+  published = false,
+  permalink
+) {
   return `---
 layout: post
 title:  "${cnTitle}"
@@ -64,7 +72,8 @@ date:   ${formatDateTime(date)}
 source:  "${url}"
 fileName:  "${fileName}"
 lang:  "${lang}"
-published: false
+published: ${published}
+${permalink ? 'permalink: "' + permalink + '"' : ""}
 ---
 {% raw %}
 ${content.trim()}
@@ -108,7 +117,7 @@ function tomd(url, opts) {
             console.log(content);
             const date = new Date();
             const fileName = md5(url);
-            writeOpenArticle(
+            let filePath = writeOpenArticle(
               fileName,
               url,
               cnTitle,
@@ -118,6 +127,9 @@ function tomd(url, opts) {
               content,
               draftsFolder
             );
+            if (opts.callback) {
+              opts.callback(filePath);
+            }
             // exec(`code "${filePath}"`, (err, stdout, stderr) => {});
           })();
         }
