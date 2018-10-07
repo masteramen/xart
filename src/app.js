@@ -8,6 +8,7 @@ const request = require("request");
 const shell = require("shelljs");
 const glob = require("glob");
 const vscode = require("vscode");
+const axios = require("axios");
 const { jekyllHome, postsFolder, draftsFolder } = require("./config");
 
 const md5 = require("./md5");
@@ -84,7 +85,7 @@ app.get("/act", (req, res) => {
       const result =
         "<html><head><script>history.go(-2);</script></head></html>";
       res.send(result);
-      md(url, draftsFolder);
+      md(url, { ...req.query, draftsFolder: draftsFolder });
     }
   })();
 });
@@ -149,7 +150,7 @@ function getImageMd5FileName(url) {
   let subfix = url.split(".").pop();
   if (subfix.length > 4) {
     subfix = "";
-  }
+  } else subfix = `.${subfix}`;
   return `${md5(url)}${subfix}`;
 }
 const watcher = chokidar.watch(draftsFolder, {
@@ -207,9 +208,14 @@ watcher
                 const resFilePath = folder + md5FileName;
                 try {
                   if (!fs.existsSync(resFilePath)) {
+                    let headers = {
+                      referer: source,
+                      "user-agent":
+                        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36"
+                    };
                     console.log(`download resource ${url} to ${resFilePath}`);
                     // eslint-disable-next-line no-await-in-loop
-                    await request({
+                    /*await request({
                       url,
                       headers: {
                         referer: source,
@@ -221,6 +227,19 @@ watcher
                         r.pipe(fs.createWriteStream(resFilePath));
                       } else {
                         console.log(`status code :${r.statusCode}`);
+                      }
+                    });*/
+                    // eslint-disable-next-line no-await-in-loop
+                    await axios({
+                      method: "get",
+                      url: url,
+                      responseType: "stream",
+                      headers: headers
+                    }).then(response => {
+                      console.log(` status:${response.status}`);
+                      if (response.status === 200) {
+                        console.log(resFilePath);
+                        response.data.pipe(fs.createWriteStream(resFilePath));
                       }
                     });
                   } else {

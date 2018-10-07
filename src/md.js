@@ -71,9 +71,10 @@ ${content.trim()}
 {% endraw %}
 `;
 }
-function tomd(url, draftsFolder) {
+function tomd(url, opts) {
   return new Promise((resolve, reject) => {
     console.log(url);
+    let { draftsFolder } = opts;
     if (url) {
       read(
         url,
