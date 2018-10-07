@@ -24,10 +24,11 @@ function handleChangeMD(filePath) {
 
       const folder = `${postsFolder}/${date.getFullYear()}/${fileName}/`;
       const draftFolder = `${draftsFolder}${fileName}/`;
-      const postFileName = `${date.getFullYear()}-${`0${date.getMonth()}`.substr(
+      const postFileName = `${date.getFullYear()}-${`0${date.getMonth() +
+        1}`.substr(-2, 2)}-${`0${date.getDate()}`.substr(
         -2,
         2
-      )}-${`0${date.getDate()}`.substr(-2, 2)}-${fileName}.md`;
+      )}-${fileName}.md`;
       const postFilePath = `${folder}${postFileName}`;
 
       if (published === true) {
