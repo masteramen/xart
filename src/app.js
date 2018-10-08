@@ -8,7 +8,6 @@ const request = require("request");
 const shell = require("shelljs");
 const glob = require("glob");
 const vscode = require("vscode");
-const axios = require("axios");
 const { jekyllHome, postsFolder, draftsFolder } = require("./config");
 
 const { handleChangeMD } = require("./handlers");

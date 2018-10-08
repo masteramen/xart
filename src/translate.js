@@ -3,7 +3,7 @@ var querystring = require("querystring");
 var got = require("got");
 var safeEval = require("safe-eval");
 var token = require("./google-translate-token");
-
+const { getAgent } = require("./config");
 var languages = require("./languages");
 
 function translate(text, opts) {
@@ -59,12 +59,14 @@ function translate(text, opts) {
           headers: {
             "user-agent":
               "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36"
-          }
+          },
+          agent: getAgent()
         })
         .then(res => {
           return got.post(url, {
             timeout: 2000,
             retries: 10,
+            agent: getAgent(),
             headers: {
               Referer: "https://translate.google.cn",
               cookie: res.headers["set-cookie"],

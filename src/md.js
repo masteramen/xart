@@ -5,6 +5,7 @@ const sanitize = require("sanitize-filename");
 
 const { translateStr, translatePure } = require("./translator");
 const md5 = require("./md5");
+const { httpGet } = require("./http");
 
 function formate2(d) {
   return `0${d}`.substr(-2, 2);
@@ -85,55 +86,61 @@ function tomd(url, opts) {
     console.log(url);
     let { draftsFolder } = opts;
     if (url) {
-      read(
-        url,
-        {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36",
-          Referer: url
-        },
-        (err, article, meta) => {
-          if (err) {
-            return reject(`fail: ${err}`);
-          }
-          console.log(article.title);
-          let content = h2m(article.content, {});
-          console.log(content);
-          resolve("processing");
-          (async () => {
-            let cnTitle = article.title;
-            let lang = "en";
-            if (
-              content.search(new RegExp("[\\u4E00-\\u9FFF]")) === -1 &&
-              cnTitle.search(new RegExp("[\\u4E00-\\u9FFF]")) === -1
-            ) {
-              content = await translateStr(content);
-              cnTitle = await translatePure(article.title);
-            } else {
-              lang = "zh_CN";
+      httpGet(url, {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36",
+        Referer: url
+      }).then(html => {
+        read(
+          html,
+          {
+            "User-Agent":
+              "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36",
+            Referer: url
+          },
+          (err, article, meta) => {
+            if (err) {
+              return reject(`fail: ${err}`);
             }
-
-            cnTitle = cnTitle.replace(/[\n\r]/g, "");
+            console.log(article.title);
+            let content = h2m(article.content, {});
             console.log(content);
-            const date = new Date();
-            const fileName = md5(url);
-            let filePath = writeOpenArticle(
-              fileName,
-              url,
-              cnTitle,
-              article.title,
-              date,
-              lang,
-              content,
-              draftsFolder
-            );
-            if (opts.callback) {
-              opts.callback(filePath);
-            }
-            // exec(`code "${filePath}"`, (err, stdout, stderr) => {});
-          })();
-        }
-      );
+            resolve("processing");
+            (async () => {
+              let cnTitle = article.title;
+              let lang = "en";
+              if (
+                content.search(new RegExp("[\\u4E00-\\u9FFF]")) === -1 &&
+                cnTitle.search(new RegExp("[\\u4E00-\\u9FFF]")) === -1
+              ) {
+                content = await translateStr(content);
+                cnTitle = await translatePure(article.title);
+              } else {
+                lang = "zh_CN";
+              }
+
+              cnTitle = cnTitle.replace(/[\n\r]/g, "");
+              console.log(content);
+              const date = new Date();
+              const fileName = md5(url);
+              let filePath = writeOpenArticle(
+                fileName,
+                url,
+                cnTitle,
+                article.title,
+                date,
+                lang,
+                content,
+                draftsFolder
+              );
+              if (opts.callback) {
+                opts.callback(filePath);
+              }
+              // exec(`code "${filePath}"`, (err, stdout, stderr) => {});
+            })();
+          }
+        );
+      });
     } else {
       return reject(`fail: ${url}`);
     }

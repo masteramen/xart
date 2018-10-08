@@ -54,6 +54,7 @@ async function getUrl(url) {
     );
   let date = new Date(new Date("2017-01-01").getTime() - 1000 * index);
   let fileName = 20170101500;
+  arc.title = arc.title.replace("» java面试题", "").trim();
   let filePath = writeOpenArticle(
     "" + (fileName - index),
     url,
@@ -99,7 +100,7 @@ async function getUrl(url) {
           console.log(ee);
         }
         //console.log("sleep 5s");
-        await sleep(5000);
+        await sleep(3000);
         index += 1;
       }
     }

@@ -4,7 +4,7 @@ const vscode = require("vscode");
 const globalTunnel = require("global-tunnel-ng");
 const { URL } = require("url");
 const { writeOpenArticle } = require("./md");
-const { draftsFolder } = require("./config");
+const { draftsFolder, httpProxy } = require("./config");
 const { open } = require("./vsfun");
 
 //const express = require("express");
@@ -16,7 +16,8 @@ console.log(
   "http.proxy:" + vscode.workspace.getConfiguration("http").get("proxy")
 );
 if (vscode.workspace.getConfiguration("http").get("proxy")) {
-  const httpProxyUrl = new URL(
+  httpProxy = vscode.workspace.getConfiguration("http").get("proxy");
+  /*const httpProxyUrl = new URL(
     vscode.workspace.getConfiguration("http").get("proxy")
   );
   console.log(httpProxyUrl.hostname, httpProxyUrl.port);
@@ -25,7 +26,7 @@ if (vscode.workspace.getConfiguration("http").get("proxy")) {
     port: parseInt(httpProxyUrl.port)
     //proxyAuth: 'userId:password', // optional authentication
     //sockets: 50 // optional pool size for each http and https
-  });
+  });*/
 }
 
 // this method is called when your extension is activated
