@@ -1,19 +1,27 @@
 const userHome = require("user-home");
-const tunnel = require("tunnel-agent");
-
+const { URL } = require("url");
 const jekyllHome = userHome + "/git/jekyll/";
 const postsFolder = `${jekyllHome}_posts/`;
 const draftsFolder = `${jekyllHome}/_drafts/`;
-let httpProxy = null;
+const config= {httpProxy:"http://proxy-tmg.wb.devb.hksarg:8080/"};
+var tunnel = require('tunnel');
+
+function setConfig(name,value){
+  config[name]=value;
+	console.log(JSON.stringify(config));
+}
 function getAgent() {
-  if (httpProxy) {
-    return tunnel.httpOverHttp({
+  if (config["httpProxy"]) {
+    const httpProxyUrl = new URL(config["httpProxy"]);
+    console.log(httpProxyUrl.hostname, httpProxyUrl.port);
+    return tunnel.httpsOverHttp({
       proxy: {
-        host: httpProxy
+        host: httpProxyUrl.hostname,
+        port:httpProxyUrl.port
       }
     });
   }
   return null;
 }
 
-module.exports = { jekyllHome, postsFolder, draftsFolder, getAgent };
+module.exports = { jekyllHome, postsFolder, draftsFolder, getAgent,setConfig};

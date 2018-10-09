@@ -4,7 +4,7 @@ const vscode = require("vscode");
 const globalTunnel = require("global-tunnel-ng");
 const { URL } = require("url");
 const { writeOpenArticle } = require("./md");
-const { draftsFolder, httpProxy } = require("./config");
+const { draftsFolder, setConfig} = require("./config");
 const { open } = require("./vsfun");
 
 //const express = require("express");
@@ -16,7 +16,7 @@ console.log(
   "http.proxy:" + vscode.workspace.getConfiguration("http").get("proxy")
 );
 if (vscode.workspace.getConfiguration("http").get("proxy")) {
-  httpProxy = vscode.workspace.getConfiguration("http").get("proxy");
+  setConfig("httpProxy",vscode.workspace.getConfiguration("http").get("proxy"));
   /*const httpProxyUrl = new URL(
     vscode.workspace.getConfiguration("http").get("proxy")
   );
