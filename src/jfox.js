@@ -45,7 +45,7 @@ async function getUrl(url) {
   console.log("art:");
   console.log(arc.title);
   let content = h2m(arc.content, {});
-  let permalink = url.replace("http://www.jfox.info/", "");
+  let permalink = "2017/"+url.replace("http://www.jfox.info/", "");
   content = content
     .replace(/By  \- Last.*?[\r\n]/, "")
     .replace(
