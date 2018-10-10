@@ -49,7 +49,9 @@ function translate(text, opts) {
       };
       data[token.name] = token.value;
 
-      return url + "?" + querystring.stringify(data);
+      let r= url + "?" + querystring.stringify(data);
+      console.log(r);
+      return r;
     })
     .then(function(url) {
       return got
@@ -137,6 +139,4 @@ function translate(text, opts) {
 
 module.exports = translate;
 module.exports.languages = languages;
-(async () => {
-  var result = await translate("hello", { raw: true, to: "zh-CN" });
-})();
+

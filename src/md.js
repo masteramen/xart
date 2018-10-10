@@ -91,6 +91,7 @@ function tomd(url, opts) {
           "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36",
         Referer: url
       }).then(html => {
+        html = html.replace(/\n/g,' ');
         read(
           html,
           {

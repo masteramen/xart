@@ -22,7 +22,7 @@ function retryAxios(opts) {
       options
     )
     .then(res => {
-      console.log(JSON.stringify(res))
+     // console.log(JSON.stringify(res))
       return { data: res.body };
     });
 }
