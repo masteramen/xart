@@ -1,6 +1,16 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require("vscode");
+const {
+  ExtensionContext,
+  StatusBarAlignment,
+  window,
+  StatusBarItem,
+  Selection,
+  workspace,
+  TextEditor,
+  commands
+} = vscode;
 // const globalTunnel = require("global-tunnel-ng");
 const { writeOpenArticle } = require("./md");
 const { draftsFolder, setConfig } = require("./config");
@@ -37,8 +47,21 @@ function activate(context) {
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
   console.log('Congratulations, your extension "xart" is now active!');
+  const status = window.createStatusBarItem(StatusBarAlignment.Right, 100);
+  status.text = "=3888";
+  status.show();
 
-  require("./app")(context);
+  require("./app")(context)
+    .then(() => {
+      status.text = "3888";
+      status.command = "extension.sayHello";
+      context.subscriptions.push(status);
+    })
+    .catch(err => {
+      console.log(err);
+      status.text = "!3888";
+      vscode.window.showInformationMessage(err);
+    });
 
   /*app.get("/", (req, res) => {
     console.log("hello");
@@ -57,6 +80,11 @@ function activate(context) {
       // The code you place here will be executed every time your command is executed
 
       // Display a message box to the user
+      vscode.commands.executeCommand(
+        "vscode.open",
+        vscode.Uri.parse("http://localhost:3888")
+      );
+
       vscode.window.showInformationMessage("Hello World!");
     }
   );
