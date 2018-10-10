@@ -2,7 +2,7 @@ const path = require("path");
 const fs = require("fs");
 const fm = require("front-matter");
 const shell = require("shelljs");
-const axios = require("axios");
+const {axios} = require("./configAxios.js");
 const md5 = require("./md5");
 const sleep = require("./sleep");
 const { postsFolder, draftsFolder } = require("./config");
@@ -15,14 +15,17 @@ function getImageMd5FileName(url) {
 }
 function handleChangeMD(filePath) {
   if (!filePath.endsWith(".md")) return;
+  console.log("handleChangeMD start");
   return (async () => {
     try {
       const postfm = fm(fs.readFileSync(filePath, "utf8"));
       const { published, fileName, source } = postfm.attributes;
+      console.log(filePath);
+      console.log(JSON.stringify(postfm.attributes));
       let { date } = postfm.attributes;
       date = new Date(date);
 
-      const folder = `${postsFolder}/${date.getFullYear()}/${fileName}/`;
+      const folder = `${postsFolder}${date.getFullYear()}/${fileName}/`;
       const draftFolder = `${draftsFolder}${fileName}/`;
       const postFileName = `${date.getFullYear()}-${`0${date.getMonth() +
         1}`.substr(-2, 2)}-${`0${date.getDate()}`.substr(
@@ -30,9 +33,9 @@ function handleChangeMD(filePath) {
         2
       )}-${fileName}.md`;
       const postFilePath = `${folder}${postFileName}`;
-
+      console.log(`published:${published}`);
       if (published === true) {
-        shell.mkdir("-p", folder);
+        try{shell.mkdir("-p", folder);}catch(e){}
 
         const fileContent = fs.readFileSync(filePath, "utf8");
         const data = fileContent.split("\n");
@@ -54,6 +57,8 @@ function handleChangeMD(filePath) {
             ) {
               const md5FileName = getImageMd5FileName(url);
               const resFilePath = folder + md5FileName;
+              console.log(url);
+              console.log(resFilePath);
               try {
                 if (!fs.existsSync(resFilePath)) {
                   let headers = {
@@ -88,13 +93,13 @@ function handleChangeMD(filePath) {
                     if (response.status === 200) {
                       console.log(resFilePath);
                       response.data.pipe(fs.createWriteStream(resFilePath));
+                      downloadedUrls.push(url);
                     }
                   });
                   await sleep(1000);
                 } else {
                   console.log(`resource ${url} exists in ${resFilePath}`);
                 }
-                downloadedUrls.push(url);
               } catch (e) {
                 console.log(`download resource ${url} fail:${e}`);
               }

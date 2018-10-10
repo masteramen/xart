@@ -3,7 +3,6 @@ const path = require("path");
 const fs = require("fs");
 const { exec } = require("child_process");
 const chokidar = require("chokidar");
-const fm = require("front-matter");
 const request = require("request");
 const shell = require("shelljs");
 const glob = require("glob");
@@ -164,7 +163,7 @@ watcher
   })
   .on("change", filePath => {
     console.log("change " + filePath);
-    handleChangeMD(filePath);
+    setTimeout(()=>handleChangeMD(filePath),500);
   })
   .on("unlink", filePath => {
     log("File", filePath, "has been removed");
