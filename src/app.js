@@ -7,6 +7,17 @@ const request = require("request");
 const shell = require("shelljs");
 const glob = require("glob");
 const vscode = require("vscode");
+const {
+  ExtensionContext,
+  StatusBarAlignment,
+  window,
+  StatusBarItem,
+  Selection,
+  workspace,
+  TextEditor,
+  commands
+} = vscode;
+
 const { jekyllHome, postsFolder, draftsFolder } = require("./config");
 
 const { handleChangeMD } = require("./handlers");
@@ -41,149 +52,161 @@ function getPostFile(dir) {
   }
   return null;
 }
-const app = express();
-// app.use(express.static('public'))
-var currentPath = process.cwd();
-console.log(`currentPath:${currentPath}`);
-console.log(__dirname);
-app.use(express.static(path.join(__dirname, "public")));
-app.set("view engine", "pug");
-app.set("views", path.join(__dirname, "/views"));
 
-setTimeout(() => {
-  shell.exec("git pull ", { cwd: __dirname });
-  shell.exec("git pull ", { cwd: jekyllHome });
-}, 3000);
-
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
-  );
-  next();
-});
-
-app.get("/act", (req, res) => {
-  const { url } = req.query;
-  console.log(url);
-
-  (async () => {
-    const first = glob
-      .sync(`${draftsFolder}/**/*${md5(url)}.md`)
-      .concat(glob.sync(`${postsFolder}/**/*${md5(url)}.md`));
-    if (first.length > 0) {
-      console.log(first[0]);
-      const result =
-        "<html><head><script>history.go(-2);</script></head></html>";
-      res.send(result);
-      open(first[0]);
-      // exec(`code ${first[0]}`);
-    } else {
-      const result =
-        "<html><head><script>history.go(-2);</script></head></html>";
-      res.send(result);
-      tomd(url, { ...req.query, draftsFolder: draftsFolder, callback: open });
-    }
-  })();
-});
-
-app.get("/hello", (req, res) => {
-  const { url } = req.query;
-  // console.log(url);
-  console.log(req.host);
-
-  res.render("hello", { url, draft_url: "http://localhost:3888" });
-});
-
-app.get("/", (req, res) => {
-  const targetPath = draftsFolder;
-  // var files = fs.readdirSync(targetPath);
-  const files = fs
-    .readdirSync(targetPath)
-    .map(f => {
-      const pf = getPostFile(path.join(targetPath, f));
-      return {
-        name: path.join(f, pf),
-        time: fs.statSync(path.join(targetPath, f, pf)).mtime.getTime()
-      };
-    })
-    .filter(f => f.name)
-    .sort((a, b) => b.time - a.time)
-    .map(v => v.name);
-
-  res.render("drafts", { title: "Drafts", fileNames: files });
-});
-
-app.get("/edit", (req, res) => {
-  console.log(req.query.fileName);
-
-  const targetPath = draftsFolder;
-
-  const filename = req.query.fileName;
-  const filePath = path.join(targetPath, filename);
-  console.log(filePath);
-  const stats = fs.statSync(filePath);
-  const isFile = stats.isFile();
-  let result =
-    '<html><head><script>alert("file not exists");window.close();</script></head><body></body></html>';
-  if (isFile) {
-    open(filePath);
-
-    result =
-      "<html><head><script>window.close();</script></head><body></body></html>";
-  }
-
-  res.send(result);
-});
-
-app.listen(3888, () => console.log("Example app listening on port 3888!"));
-
-const watcher = chokidar.watch(draftsFolder, {
-  ignored: /[/\\]\./,
-  persistent: true
-});
-const log = console.log.bind(console);
-
-watcher
-  .on("add", filePath => {
-    log("File", filePath, "has been added");
-  })
-  .on("addDir", file => {
-    log("Directory", file, "has been added");
-  })
-  .on("change", filePath => {
-    console.log("change " + filePath);
-    setTimeout(()=>handleChangeMD(filePath),500);
-  })
-  .on("unlink", filePath => {
-    log("File", filePath, "has been removed");
-  })
-  .on("unlinkDir", filePath => {
-    log("Directory", filePath, "has been removed");
-  })
-  .on("error", error => {
-    log("Error happened", error);
-  })
-  .on("ready", () => {
-    log("Initial scan complete. Ready for changes.");
-  })
-  .on("raw", (event, filePath, details) => {
-    log("Raw event info:", event, filePath, details);
-  });
-
-function build(time) {
-  console.log(`git commit -am "auto commit ${new Date()}"`);
-  shell.exec(`git add .`, {
-    cwd: jekyllHome
-  });
-  let ret = shell.exec(`git commit -am "auto commit ${new Date()}"`, {
-    cwd: jekyllHome
-  });
-  shell.exec(`git push`, { cwd: jekyllHome });
+function startServer(context) {
+  const app = express();
+  // app.use(express.static('public'))
+  var currentPath = process.cwd();
+  console.log(`currentPath:${currentPath}`);
+  console.log(__dirname);
+  app.use(express.static(path.join(__dirname, "public")));
+  app.set("view engine", "pug");
+  app.set("views", path.join(__dirname, "/views"));
 
   setTimeout(() => {
-    build(time);
-  }, time);
+    shell.exec("git pull ", { cwd: __dirname });
+    shell.exec("git pull ", { cwd: jekyllHome });
+  }, 3000);
+
+  app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Origin, X-Requested-With, Content-Type, Accept"
+    );
+    next();
+  });
+
+  app.get("/act", (req, res) => {
+    const { url } = req.query;
+    console.log(url);
+
+    (async () => {
+      const first = glob
+        .sync(`${draftsFolder}/**/*${md5(url)}.md`)
+        .concat(glob.sync(`${postsFolder}/**/*${md5(url)}.md`));
+      if (first.length > 0) {
+        console.log(first[0]);
+        const result =
+          "<html><head><script>history.go(-2);</script></head></html>";
+        res.send(result);
+        open(first[0]);
+        // exec(`code ${first[0]}`);
+      } else {
+        const result =
+          "<html><head><script>history.go(-2);</script></head></html>";
+        res.send(result);
+        tomd(url, { ...req.query, draftsFolder: draftsFolder, callback: open });
+      }
+    })();
+  });
+
+  app.get("/hello", (req, res) => {
+    const { url } = req.query;
+    // console.log(url);
+    console.log(req.host);
+
+    res.render("hello", { url, draft_url: "http://localhost:3888" });
+  });
+
+  app.get("/", (req, res) => {
+    const targetPath = draftsFolder;
+    // var files = fs.readdirSync(targetPath);
+    const files = fs
+      .readdirSync(targetPath)
+      .map(f => {
+        const pf = getPostFile(path.join(targetPath, f));
+        return {
+          name: path.join(f, pf),
+          time: fs.statSync(path.join(targetPath, f, pf)).mtime.getTime()
+        };
+      })
+      .filter(f => f.name)
+      .sort((a, b) => b.time - a.time)
+      .map(v => v.name);
+
+    res.render("drafts", { title: "Drafts", fileNames: files });
+  });
+
+  app.get("/edit", (req, res) => {
+    console.log(req.query.fileName);
+
+    const targetPath = draftsFolder;
+
+    const filename = req.query.fileName;
+    const filePath = path.join(targetPath, filename);
+    console.log(filePath);
+    const stats = fs.statSync(filePath);
+    const isFile = stats.isFile();
+    let result =
+      '<html><head><script>alert("file not exists");window.close();</script></head><body></body></html>';
+    if (isFile) {
+      open(filePath);
+
+      result =
+        "<html><head><script>window.close();</script></head><body></body></html>";
+    }
+
+    res.send(result);
+  });
+
+  app.listen(3888, () => {
+    console.log("Example app listening on port 3888!");
+    const status = window.createStatusBarItem(StatusBarAlignment.Right, 100);
+    status.text = "3888";
+    status.command = "extension.sayHello";
+    context.subscriptions.push(status);
+
+    status.show();
+    const watcher = chokidar.watch(draftsFolder, {
+      ignored: /[/\\]\./,
+      persistent: true
+    });
+    const log = console.log.bind(console);
+
+    watcher
+      .on("add", filePath => {
+        log("File", filePath, "has been added");
+      })
+      .on("addDir", file => {
+        log("Directory", file, "has been added");
+      })
+      .on("change", filePath => {
+        console.log("change " + filePath);
+        setTimeout(() => handleChangeMD(filePath), 500);
+      })
+      .on("unlink", filePath => {
+        log("File", filePath, "has been removed");
+      })
+      .on("unlinkDir", filePath => {
+        log("Directory", filePath, "has been removed");
+      })
+      .on("error", error => {
+        log("Error happened", error);
+      })
+      .on("ready", () => {
+        log("Initial scan complete. Ready for changes.");
+      })
+      .on("raw", (event, filePath, details) => {
+        log("Raw event info:", event, filePath, details);
+      });
+
+    function build(time) {
+      console.log(`git commit -am "auto commit ${new Date()}"`);
+      shell.exec(`git add .`, {
+        cwd: jekyllHome
+      });
+      let ret = shell.exec(`git commit -am "auto commit ${new Date()}"`, {
+        cwd: jekyllHome
+      });
+      shell.exec(`git push`, { cwd: jekyllHome });
+
+      setTimeout(() => {
+        build(time);
+      }, time);
+    }
+    build(1000 * 60 * 60 * 3);
+  });
 }
-build(1000 * 60 * 60 * 3);
+
+module.exports = startServer;

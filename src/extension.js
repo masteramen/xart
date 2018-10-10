@@ -1,10 +1,9 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require("vscode");
-const globalTunnel = require("global-tunnel-ng");
-const { URL } = require("url");
+// const globalTunnel = require("global-tunnel-ng");
 const { writeOpenArticle } = require("./md");
-const { draftsFolder, setConfig} = require("./config");
+const { draftsFolder, setConfig } = require("./config");
 const { open } = require("./vsfun");
 
 //const express = require("express");
@@ -16,7 +15,10 @@ console.log(
   "http.proxy:" + vscode.workspace.getConfiguration("http").get("proxy")
 );
 if (vscode.workspace.getConfiguration("http").get("proxy")) {
-  setConfig("httpProxy",vscode.workspace.getConfiguration("http").get("proxy"));
+  setConfig(
+    "httpProxy",
+    vscode.workspace.getConfiguration("http").get("proxy")
+  );
   /*const httpProxyUrl = new URL(
     vscode.workspace.getConfiguration("http").get("proxy")
   );
@@ -36,7 +38,7 @@ function activate(context) {
   // This line of code will only be executed once when your extension is activated
   console.log('Congratulations, your extension "xart" is now active!');
 
-  require("./app");
+  require("./app")(context);
 
   /*app.get("/", (req, res) => {
     console.log("hello");
