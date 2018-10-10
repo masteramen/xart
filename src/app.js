@@ -77,10 +77,7 @@ app.get("/act", (req, res) => {
       const result =
         "<html><head><script>history.go(-2);</script></head></html>";
       res.send(result);
-      var openPath = vscode.Uri.file(first[0]);
-      vscode.workspace.openTextDocument(openPath).then(doc => {
-        vscode.window.showTextDocument(doc);
-      });
+      open(first[0]);
       // exec(`code ${first[0]}`);
     } else {
       const result =
@@ -131,14 +128,8 @@ app.get("/edit", (req, res) => {
   let result =
     '<html><head><script>alert("file not exists");window.close();</script></head><body></body></html>';
   if (isFile) {
-    exec(`code "${filePath}"`, (err, stdout, stderr) => {
-      if (err) {
-        // node couldn't execute the command
-        return;
-      }
-      console.log(`stdout: ${stdout}`);
-      console.log(`stderr: ${stderr}`);
-    });
+    open(filePath);
+
     result =
       "<html><head><script>window.close();</script></head><body></body></html>";
   }
