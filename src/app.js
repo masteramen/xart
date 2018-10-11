@@ -41,15 +41,16 @@ function getPostFile(dir) {
 }
 
 function build(time) {
-  console.log(`git commit -am "auto commit ${new Date()}"`);
-  shell.exec(`git add .`, {
-    cwd: jekyllHome
-  });
-  let ret = shell.exec(`git commit -am "auto commit ${new Date()}"`, {
-    cwd: jekyllHome
-  });
-  shell.exec(`git push`, { cwd: jekyllHome });
-
+  setTimeout(()=>{
+    console.log(`git commit -am "auto commit ${new Date()}"`);
+    shell.exec(`git add .`, {
+      cwd: jekyllHome
+    });
+    let ret = shell.exec(`git commit -am "auto commit ${new Date()}"`, {
+      cwd: jekyllHome
+    });
+    shell.exec(`git push`, { cwd: jekyllHome });
+  },10000);
   setTimeout(() => {
     build(time);
   }, time);
