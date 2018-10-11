@@ -1,5 +1,7 @@
 const userHome = require("user-home");
 const { URL } = require("url");
+const net = require("net");
+
 const jekyllHome = userHome + "/git/jekyll/";
 const postsFolder = `${jekyllHome}_posts/`;
 const draftsFolder = `${jekyllHome}/_drafts/`;
@@ -25,4 +27,32 @@ function getAgent() {
   return null;
 }
 
-module.exports = { jekyllHome, postsFolder, draftsFolder, getAgent, setConfig };
+function portIsOccupied(port) {
+  const server = net.createServer().listen(port);
+  return new Promise((resolve, reject) => {
+    server.on("listening", () => {
+      console.log(`the server is runnint on port ${port}`);
+      server.close();
+      resolve(port);
+    });
+
+    server.on("error", err => {
+      if (err.code === "EADDRINUSE") {
+        reject(err);
+        //resolve(portIsOccupied(port + 1)); //注意这句，如占用端口号+1
+        console.log(`this port ${port} is occupied.try another.`);
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
+
+module.exports = {
+  jekyllHome,
+  postsFolder,
+  draftsFolder,
+  getAgent,
+  setConfig,
+  portIsOccupied
+};

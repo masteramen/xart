@@ -13,7 +13,7 @@ const {
 } = vscode;
 // const globalTunnel = require("global-tunnel-ng");
 const { writeOpenArticle } = require("./md");
-const { draftsFolder, setConfig } = require("./config");
+const { draftsFolder, setConfig, portIsOccupied } = require("./config");
 const { open } = require("./vsfun");
 const got = require("got");
 //const express = require("express");
@@ -52,18 +52,21 @@ function activate(context) {
   // This line of code will only be executed once when your extension is activated
   console.log('Congratulations, your extension "xart" is now active!');
   const status = window.createStatusBarItem(StatusBarAlignment.Right, 100);
-  status.text = "=3888";
+  let port = 3888;
+  status.text = `-${port}-`;
   status.show();
-
-  require("./app")(context)
+  portIsOccupied(port)
     .then(() => {
-      status.text = "3888";
+      return require("./app")(context, port);
+    })
+    .then(() => {
+      status.text = `${port}`;
       status.command = "extension.sayHello";
       context.subscriptions.push(status);
     })
     .catch(err => {
       console.log(err);
-      status.text = "!3888";
+      status.text = `!${port}`;
       vscode.window.showInformationMessage(err);
     });
 

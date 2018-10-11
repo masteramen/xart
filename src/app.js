@@ -41,7 +41,7 @@ function getPostFile(dir) {
 }
 
 function build(time) {
-  setTimeout(()=>{
+  setTimeout(() => {
     console.log(`git commit -am "auto commit ${new Date()}"`);
     shell.exec(`git add .`, {
       cwd: jekyllHome
@@ -50,13 +50,13 @@ function build(time) {
       cwd: jekyllHome
     });
     shell.exec(`git push`, { cwd: jekyllHome });
-  },10000);
+  }, 10000);
   setTimeout(() => {
     build(time);
   }, time);
 }
 
-function startServer(context) {
+function startServer(context, port) {
   return new Promise((resolve, reject) => {
     const app = express();
     // app.use(express.static('public'))
@@ -158,8 +158,8 @@ function startServer(context) {
       res.send(result);
     });
 
-    let server = app.listen(3888, () => {
-      console.log("Example app listening on port 3888!");
+    let server = app.listen(port, () => {
+      console.log(`Example app listening on port ${port}!`);
 
       const watcher = chokidar.watch(draftsFolder, {
         ignored: /[/\\]\./,
