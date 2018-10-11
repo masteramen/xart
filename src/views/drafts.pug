@@ -1,25 +1,23 @@
 html
   head
     script.
-        function myOpen(url,option){
-         const vscode = acquireVsCodeApi();
-          vscode.postMessage({
+        const vscode = acquireVsCodeApi&&acquireVsCodeApi();
 
-          if(window.acquireVsCodeApi){
+        function myOpen(url,option){
+          console.log(url);
+          if(vscode){
             vscode.postMessage({
              command: 'open',
               text: url
-               })
+            });
           }else{
             open(url,option);
           }
-                                  command: 'alert',
-                                  text: '🐛  on line ' + count
-                              })
+                        
           }
     title= title
   body
     ul
         for fileName in fileNames
             li
-                a(href='javascript:myOpen("edit?fileName='+encodeURIComponent(encodeURIComponent(fileName))+'","_blank");')=fileName
+                a(onClick='myOpen("edit?fileName='+encodeURIComponent(encodeURIComponent(fileName))+'","_blank");',href="javascript:void(0);")=fileName

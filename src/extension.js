@@ -44,31 +44,8 @@ if (vscode.workspace.getConfiguration("http").get("proxy")) {
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 async function getWebviewContent(url) {
-  return   `<!DOCTYPE html>
-  <html lang="en">
-  <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Cat Coding</title>
-  </head>
-  <body>
-      <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" width="300" />
-      <h1 id="lines-of-code-counter" onclick="open()">0</h1>
-  
-      <script>
-        function open(){
-          const vscode = acquireVsCodeApi();
-          vscode.postMessage({
-            command: 'alert',
-            text: '🐛  hello '
-        })
-        }
-
-      </script>
-  </body>
-  </html>`;
-  //const response = await got(url);
-  //return response.body;
+  const response = await got(url);
+  return response.body;
 }
 function activate(context) {
   // Use the console to output diagnostic information (console.log) and errors (console.error)
@@ -104,35 +81,54 @@ function activate(context) {
 
   let currentPanel = undefined;
 
-  context.subscriptions.push(vscode.commands.registerCommand('extension.sayHello', () => {
-      let  columnToShowIn = vscode.ViewColumn.Two;
+  context.subscriptions.push(
+    vscode.commands.registerCommand("extension.sayHello", () => {
+      let columnToShowIn = vscode.ViewColumn.Beside;
       //vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
 
       if (currentPanel) {
-          currentPanel.reveal(columnToShowIn);
+        currentPanel.reveal();
       } else {
-          // Otherwise, create a new panel
-          currentPanel = vscode.window.createWebviewPanel('catCoding', "Cat Coding", columnToShowIn, { enableScripts: true});
-           getWebviewContent('http://localhost:3888').then(html=>{
-            currentPanel.webview.html = html;
-          });
+        // Otherwise, create a new panel
+        currentPanel = vscode.window.createWebviewPanel(
+          "index",
+          "index",
+          columnToShowIn,
+          { enableScripts: true, retainContextWhenHidden: true }
+        );
+        getWebviewContent("http://localhost:3888").then(html => {
+          currentPanel.webview.html = html;
+        });
         // Handle messages from the webview
-        currentPanel.webview.onDidReceiveMessage(message => {
-          switch (message.command) {
-            case 'open':
-            getWebviewContent(`http://localhost:3888/${message.text}`)
-            return;
-              case 'alert':
-                  vscode.window.showErrorMessage(message.text);
-                  return;
-          }
-      }, undefined, context.subscriptions);
-          // Reset when the current panel is closed
-          currentPanel.onDidDispose(() => {
-              currentPanel = undefined;
-          }, null, context.subscriptions);
+        currentPanel.webview.onDidReceiveMessage(
+          message => {
+            console.log(message.command);
+            console.log(message.text);
+            switch (message.command) {
+              case "open":
+                getWebviewContent(
+                  `http://localhost:3888/${decodeURIComponent(message.text)}`
+                );
+                return;
+              case "alert":
+                vscode.window.showErrorMessage(message.text);
+                return;
+            }
+          },
+          undefined,
+          context.subscriptions
+        );
+        // Reset when the current panel is closed
+        currentPanel.onDidDispose(
+          () => {
+            currentPanel = undefined;
+          },
+          null,
+          context.subscriptions
+        );
       }
-  }));
+    })
+  );
 
   /*let disposable = vscode.commands.registerCommand(
     "extension.sayHello",
@@ -159,9 +155,10 @@ function activate(context) {
         // When the panel is closed, cancel any future updates to the webview content
     }, null, context.subscriptions)
     }
-  );*/
+  );
 
   context.subscriptions.push(disposable);
+  */
   let newPost = vscode.commands.registerCommand(
     "extension.newPost",
     function() {
