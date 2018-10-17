@@ -11,7 +11,6 @@ const { handleChangeMD } = require("./handlers");
 const md5 = require("./md5");
 const { tomd } = require("./md");
 const { open } = require("./vsfun");
-const translatorCn = require("./translator_cn");
 
 // const globalTunnel = require('global-tunnel-ng');
 /* globalTunnel.initialize({
@@ -70,7 +69,7 @@ function startServer(context, port) {
     setTimeout(() => {
       shell.exec("git pull ", { cwd: __dirname });
       shell.exec("git pull ", { cwd: jekyllHome });
-    }, 3000);
+    }, 10000);
 
     app.use((req, res, next) => {
       res.header("Access-Control-Allow-Origin", "*");
@@ -82,7 +81,7 @@ function startServer(context, port) {
     });
 
     app.get("/act", (req, res) => {
-      const { url } = req.query;
+      const { url, inBrowser } = req.query;
       console.log(url);
 
       (async () => {
@@ -94,7 +93,7 @@ function startServer(context, port) {
           const result =
             "<html><head><script>history.go(-2);</script></head></html>";
           res.send(result);
-          open(first[0]);
+          open(first[0], inBrowser);
           // exec(`code ${first[0]}`);
         } else {
           const result =

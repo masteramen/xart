@@ -2,9 +2,11 @@ const path = require("path");
 const fs = require("fs");
 const fm = require("front-matter");
 const shell = require("shelljs");
-const {axios} = require("./configAxios.js");
+const { axios } = require("./configAxios.js");
 const md5 = require("./md5");
 const sleep = require("./sleep");
+const translatorCn = require("./translator_cn");
+
 const { postsFolder, draftsFolder } = require("./config");
 function getImageMd5FileName(url) {
   let subfix = url.split(".").pop();
@@ -35,7 +37,9 @@ function handleChangeMD(filePath) {
       const postFilePath = `${folder}${postFileName}`;
       console.log(`published:${published}`);
       if (published === true) {
-        try{shell.mkdir("-p", folder);}catch(e){}
+        try {
+          shell.mkdir("-p", folder);
+        } catch (e) {}
 
         const fileContent = fs.readFileSync(filePath, "utf8");
         const data = fileContent.split("\n");
@@ -134,6 +138,7 @@ function handleChangeMD(filePath) {
         console.log(`postfm.attributes.lang:${postfm.attributes.lang}`);
         if (postfm.attributes.lang !== "zh_CN") {
           console.log(`translate to :${postFilePath}`);
+          translatorCn(postFilePath, postFilePath);
           translatorCn(postFilePath, postFilePath);
         }
         allPostFiles.push(postFileName);

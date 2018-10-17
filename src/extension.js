@@ -55,14 +55,14 @@ function activate(context) {
   let port = 3888;
   status.text = `-${port}-`;
   status.show();
+  status.command = "extension.sayHello";
+  context.subscriptions.push(status);
   portIsOccupied(port)
     .then(() => {
       return require("./app")(context, port);
     })
     .then(() => {
       status.text = `${port}`;
-      status.command = "extension.sayHello";
-      context.subscriptions.push(status);
     })
     .catch(err => {
       console.log(err);
