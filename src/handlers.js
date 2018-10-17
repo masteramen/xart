@@ -139,7 +139,6 @@ function handleChangeMD(filePath) {
         if (postfm.attributes.lang !== "zh_CN") {
           console.log(`translate to :${postFilePath}`);
           translatorCn(postFilePath, postFilePath);
-          translatorCn(postFilePath, postFilePath);
         }
         allPostFiles.push(postFileName);
         shell
