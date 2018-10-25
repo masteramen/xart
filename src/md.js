@@ -2,6 +2,7 @@ const read = require("node-readability");
 const h2m = require("h2m");
 const fs = require("fs");
 const sanitize = require("sanitize-filename");
+const shell = require("shelljs");
 
 const { translateStr, translatePure } = require("./translator");
 const md5 = require("./md5");
@@ -47,7 +48,7 @@ function writeOpenArticle(
   const draftFolder = `${draftsFolder}${fileName}/`;
   const filePath = `${draftFolder}${sanitize(title).replace(/[/\\]/g, " ")}.md`;
   if (!fs.existsSync(draftFolder)) {
-    fs.mkdirSync(draftFolder);
+    shell.mkdir(draftFolder);
   }
   console.log(`filePaht:${filePath}`);
   fs.writeFileSync(filePath, body);
@@ -76,9 +77,7 @@ lang:  "${lang}"
 published: ${published}
 ${permalink ? 'permalink: "' + permalink + '"' : ""}
 ---
-{% raw %}
 ${content.trim()}
-{% endraw %}
 `;
 }
 function tomd(url, opts) {
@@ -91,7 +90,7 @@ function tomd(url, opts) {
           "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36",
         Referer: url
       }).then(html => {
-        html = html.replace(/\n/g,' ');
+        html = html.replace(/\n/g, " ");
         read(
           html,
           {
