@@ -1,11 +1,10 @@
 var Hexo = require('hexo');
 var userHome = require('user-home');
 
-console.log(userHome);
-var repos = userHome+'/git/hexo';
-console.log(repos);
-var hexo = new Hexo(repos, {});
-hexo.on('server',(server)=>{
+
+
+function startHexo(hexo){
+  hexo.on('server',(server)=>{
     console.log('server***************');
     var sockets = {}, nextSocketId = 0;
     server.on('connection', function (socket) {
@@ -24,21 +23,35 @@ hexo.on('server',(server)=>{
       socket.setTimeout(4000);
     });
 
-// Count down from 10 seconds
+    hexo.on('exit',()=>{
+      // Count down from 10 seconds
     // Close the server
-    hexo.unwatch();
     server.close(function () { console.log('Server closed!'); });
     // Destroy all open sockets
     for (var socketId in sockets) {
       console.log('socket', socketId, 'destroyed');
       sockets[socketId].destroy();
     }
+    });
 });
 //hexo.env.init=true;
 hexo.init().then(function(){
-hexo.call('server',{}).then(function(){
-  return hexo.exit();
+hexo.call('server',{port:40000}).then(function(){
+
 }).catch(function(err){
   return hexo.exit(err);
 });
 });
+}
+
+function stopHexo(hexo){
+  hexo.unwatch();
+  return hexo.exit();
+}
+console.log(userHome);
+var repos = userHome+'/git/hexo';
+console.log(repos);
+var hexo = new Hexo(repos, {});
+startHexo(hexo);
+
+module.exports={startHexo,stopHexo}

@@ -2,7 +2,8 @@ const userHome = require("user-home");
 const { URL } = require("url");
 const net = require("net");
 
-const jekyllHome = userHome + "/git/hexo/source/";
+const hexoHome = userHome + "/git/hexo";
+const jekyllHome = `${hexoHome}/source/"`;
 const postsFolder = `${jekyllHome}_posts/`;
 const draftsFolder = `${jekyllHome}/_drafts/`;
 //const config= {httpProxy:"http://proxy-tmg.wb.devb.hksarg:8080/"};
