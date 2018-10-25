@@ -69,7 +69,7 @@ function startServer(context, port) {
     setTimeout(() => {
       shell.exec("git pull ", { cwd: __dirname });
       shell.exec("git pull ", { cwd: jekyllHome });
-    }, 10000);
+    }, 3600000);
 
     app.use((req, res, next) => {
       res.header("Access-Control-Allow-Origin", "*");
