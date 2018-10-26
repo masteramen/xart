@@ -3,6 +3,7 @@ const h2m = require("h2m");
 const fs = require("fs");
 const sanitize = require("sanitize-filename");
 const shell = require("shelljs");
+const path = require("path");
 
 const { translateStr, translatePure } = require("./translator");
 const md5 = require("./md5");
@@ -48,9 +49,11 @@ function writeOpenArticle(
   const draftFolder = `${draftsFolder}${fileName}/`;
   const filePath = `${draftFolder}${sanitize(title).replace(/[/\\]/g, " ")}.md`;
   if (!fs.existsSync(draftFolder)) {
-    shell.mkdir(draftFolder);
+    shell.mkdir("-p", draftFolder);
+
   }
   console.log(`filePaht:${filePath}`);
+  shell.mkdir(path.dirname(filePath),'p');
   fs.writeFileSync(filePath, body);
   return filePath;
 }

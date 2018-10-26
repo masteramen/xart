@@ -6,8 +6,9 @@ const { axios } = require("./configAxios.js");
 const md5 = require("./md5");
 const sleep = require("./sleep");
 const translatorCn = require("./translator_cn");
-
+const {open} = require('./vsfun');
 const { postsFolder, draftsFolder } = require("./config");
+const vscode = require("vscode");
 function getImageMd5FileName(url) {
   let subfix = url.split(".").pop();
   if (subfix.length > 4) {
@@ -151,6 +152,21 @@ function handleChangeMD(filePath) {
       } else if (published === "deleted") {
         console.log(`delete folder ${path.dirname(filePath)}`);
         shell.rm("-rf", path.dirname(filePath));
+      }else{
+        const postfm = fm(fs.readFileSync(filePath, "utf8"));
+        const { title } = postfm.attributes;
+        let titleFileName=title+'.md';
+        let newFilePath = path.dirname(filePath)+'/'+titleFileName;
+        if(path.basename(filePath)!=titleFileName){
+           setTimeout(()=>{
+            shell.mv(filePath,newFilePath);
+            //if(vscode.window.activeTextEditor.document.uri.fsPath==filePath){
+              console.log(`newFilePath:${newFilePath}`);
+              open(newFilePath);
+           // }
+           },200) ;
+        }
+
       }
       // console.log(postfm);
     } catch (e) {

@@ -168,7 +168,6 @@ function activate(context) {
       console.log("newPost");
       let date = new Date();
       let fileName = [
-        date.getFullYear(),
         date.getMonth(),
         date.getDate(),
         parseInt("" + Math.random() * 100)

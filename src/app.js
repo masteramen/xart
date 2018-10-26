@@ -127,13 +127,14 @@ function startServer(context, port) {
       const files = fs
         .readdirSync(targetPath)
         .map(f => {
+          console.log(`targetPath, f:${targetPath},${f}`);
           const pf = getPostFile(path.join(targetPath, f));
-          return {
+          if(pf)return {
             name: path.join(f, pf),
             time: fs.statSync(path.join(targetPath, f, pf)).mtime.getTime()
           };
         })
-        .filter(f => f.name)
+        .filter(f =>f&& f.name)
         .sort((a, b) => b.time - a.time)
         .map(v => v.name);
 
