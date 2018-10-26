@@ -3,9 +3,9 @@ const { URL } = require("url");
 const net = require("net");
 
 const hexoHome = userHome + "/git/hexo";
-const jekyllHome = `${hexoHome}/source/"`;
+const jekyllHome = `${hexoHome}/source/`;
 const postsFolder = `${jekyllHome}_posts/`;
-const draftsFolder = `${jekyllHome}/_drafts/`;
+const draftsFolder = `${jekyllHome}_drafts/`;
 //const config= {httpProxy:"http://proxy-tmg.wb.devb.hksarg:8080/"};
 const config = { httpProxy: "" };
 var tunnel = require("tunnel");

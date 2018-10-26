@@ -41,14 +41,19 @@ function getPostFile(dir) {
 
 function build(time) {
   setTimeout(() => {
-    console.log(`git commit -am "auto commit ${new Date()}"`);
-    shell.exec(`git add .`, {
-      cwd: jekyllHome
-    });
-    let ret = shell.exec(`git commit -am "auto commit ${new Date()}"`, {
-      cwd: jekyllHome
-    });
-    shell.exec(`git push`, { cwd: jekyllHome });
+    if(fs.existsSync(jekyllHome)){
+      console.log(`git commit -am "auto commit ${new Date()}"`);
+      shell.exec(`git add .`, {
+        cwd: jekyllHome
+      });
+      let ret = shell.exec(`git commit -am "auto commit ${new Date()}"`, {
+        cwd: jekyllHome
+      });
+      shell.exec(`git push`, { cwd: jekyllHome });
+    }else{
+      console.log(`${jekyllHome} folder not exists!`);
+    }
+
   }, 10000);
   setTimeout(() => {
     build(time);
