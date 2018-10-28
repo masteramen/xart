@@ -113,13 +113,22 @@ function startServer(context, port) {
     });
 
     app.get("/hello", (req, res) => {
-      const { url } = req.query;
+      const { url, fileName } = req.query;
       // console.log(url);
       console.log(req.host);
+      console.log("fileName:" + fileName);
       if (
         url.startsWith("http://localhost") ||
         url.startsWith("http://www.jfox.info")
       ) {
+        if (fileName) {
+          let draftFile = `${draftsFolder}${fileName}/*.md`;
+          let postFile = `${postsFolder}${fileName}/*.md`;
+          console.log(draftFile);
+          console.log(postFile);
+          const first = glob.sync(draftFile).concat(glob.sync(postFile));
+          if (first.length > 0) open(first[0]);
+        }
         const result =
           "<html><head><script>history.go(-1);</script></head></html>";
         res.send(result);
