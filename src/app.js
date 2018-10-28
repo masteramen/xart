@@ -73,9 +73,19 @@ function startServer(context, port) {
 
     setTimeout(() => {
       let result = shell.exec("git pull ", { cwd: __dirname });
-      if (result.toString().indexOf("Already up-to-date.") ==-1) {
-        vscode.commands.executeCommand("workbench.action.reloadWindow");
-        vscode.window.showInformationMessage(result.toString());
+      if (result.toString().indexOf("Already up-to-date.") == -1) {
+        const action = "Reload";
+
+        vscode.window
+          .showInformationMessage(`${result}`, action)
+          .then(selectedAction => {
+            if (selectedAction === action) {
+              vscode.commands.executeCommand("workbench.action.reloadWindow");
+            }
+          });
+
+        // vscode.commands.executeCommand("workbench.action.reloadWindow");
+        // vscode.window.showInformationMessage(result.toString());
       }
       console.log(`result:${result}`);
       shell.exec("git pull ", { cwd: jekyllHome });
