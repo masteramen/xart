@@ -41,7 +41,7 @@ function getPostFile(dir) {
 
 function build(time) {
   setTimeout(() => {
-    if(fs.existsSync(jekyllHome)){
+    if (fs.existsSync(jekyllHome)) {
       console.log(`git commit -am "auto commit ${new Date()}"`);
       shell.exec(`git add .`, {
         cwd: jekyllHome
@@ -50,10 +50,9 @@ function build(time) {
         cwd: jekyllHome
       });
       shell.exec(`git push`, { cwd: jekyllHome });
-    }else{
+    } else {
       console.log(`${jekyllHome} folder not exists!`);
     }
-
   }, 10000);
   setTimeout(() => {
     build(time);
@@ -117,8 +116,14 @@ function startServer(context, port) {
       const { url } = req.query;
       // console.log(url);
       console.log(req.host);
-
-      res.render("hello", { url, draft_url: "http://localhost:3888" });
+      if (
+        url.startsWith("http://localhost") ||
+        url.startsWith("http://www.jfox.info")
+      ) {
+        const result =
+          "<html><head><script>history.go(-1);</script></head></html>";
+        res.send(result);
+      } else res.render("hello", { url, draft_url: "http://localhost:3888" });
     });
 
     app.get("/", (req, res) => {
@@ -129,12 +134,13 @@ function startServer(context, port) {
         .map(f => {
           console.log(`targetPath, f:${targetPath},${f}`);
           const pf = getPostFile(path.join(targetPath, f));
-          if(pf)return {
-            name: path.join(f, pf),
-            time: fs.statSync(path.join(targetPath, f, pf)).mtime.getTime()
-          };
+          if (pf)
+            return {
+              name: path.join(f, pf),
+              time: fs.statSync(path.join(targetPath, f, pf)).mtime.getTime()
+            };
         })
-        .filter(f =>f&& f.name)
+        .filter(f => f && f.name)
         .sort((a, b) => b.time - a.time)
         .map(v => v.name);
 
