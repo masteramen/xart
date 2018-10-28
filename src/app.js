@@ -4,6 +4,7 @@ const fs = require("fs");
 const chokidar = require("chokidar");
 const shell = require("shelljs");
 const glob = require("glob");
+const vscode = require("vscode");
 
 const { jekyllHome, postsFolder, draftsFolder } = require("./config");
 
@@ -71,9 +72,14 @@ function startServer(context, port) {
     app.set("views", path.join(__dirname, "/views"));
 
     setTimeout(() => {
-      shell.exec("git pull ", { cwd: __dirname });
+      let result = shell.exec("git pull ", { cwd: __dirname });
+      if (result.toString().indexOf("Already up-to-date.") ==-1) {
+        vscode.commands.executeCommand("workbench.action.reloadWindow");
+        vscode.window.showInformationMessage(result.toString());
+      }
+      console.log(`result:${result}`);
       shell.exec("git pull ", { cwd: jekyllHome });
-    }, 3600000);
+    }, 3000);
 
     app.use((req, res, next) => {
       res.header("Access-Control-Allow-Origin", "*");
