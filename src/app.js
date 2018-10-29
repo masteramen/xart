@@ -73,7 +73,7 @@ function startServer(context, port) {
 
     setTimeout(() => {
       let result = shell.exec("git pull ", { cwd: __dirname });
-      if (result.toString().indexOf("Already up-to-date.") == -1) {
+      if (result.toString().indexOf("Already") == -1) {
         const action = "Reload";
 
         vscode.window
