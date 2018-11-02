@@ -62,6 +62,8 @@
     "shelljs": "^0.8.2",
     "tunnel": "0.0.6",
     "tunnel-agent": "^0.6.0",
+    "turndown": "^5.0.1",
+    "turndown-plugin-gfm": "^1.0.2",
     "user-home": "^2.0.0",
     "yaml-front-matter": "^4.0.0"
   }

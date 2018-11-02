@@ -9,6 +9,13 @@ const { translateStr, translatePure } = require("./translator");
 const md5 = require("./md5");
 const { httpGet } = require("./http");
 
+var TurndownService = require('turndown')
+var turndownPluginGfm = require('turndown-plugin-gfm')
+
+var gfm = turndownPluginGfm.gfm
+var turndownService = new TurndownService()
+turndownService.use(gfm)
+
 function formate2(d) {
   return `0${d}`.substr(-2, 2);
 }
@@ -106,7 +113,8 @@ function tomd(url, opts) {
               return reject(`fail: ${err}`);
             }
             console.log(article.title);
-            let content = h2m(article.content, {});
+           // let content = h2m(article.content, {});
+            let content = turndownService.turndown(article.content);
             console.log(content);
             resolve("processing");
             (async () => {
