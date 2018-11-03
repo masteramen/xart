@@ -5,6 +5,7 @@ const chokidar = require("chokidar");
 const shell = require("shelljs");
 const glob = require("glob");
 const vscode = require("vscode");
+//const console = require("./logger");
 
 const { jekyllHome, postsFolder, draftsFolder } = require("./config");
 
@@ -88,7 +89,7 @@ function startServer(context, port) {
         // vscode.window.showInformationMessage(result.toString());
       }
       console.log(`result:${result}`);
-      shell.exec("git pull ", { cwd: jekyllHome });
+      let ret = shell.exec("git pull ", { cwd: jekyllHome });
     }, 3000);
 
     app.use((req, res, next) => {

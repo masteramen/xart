@@ -1,35 +1,15 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require("vscode");
-const {
-  ExtensionContext,
-  StatusBarAlignment,
-  window,
-  StatusBarItem,
-  Selection,
-  workspace,
-  TextEditor,
-  commands
-} = vscode;
+const { StatusBarAlignment, window } = vscode;
 // const globalTunnel = require("global-tunnel-ng");
 const { writeOpenArticle } = require("./md");
-const { draftsFolder, setConfig, portIsOccupied } = require("./config");
+const { draftsFolder, portIsOccupied } = require("./config");
 const { open } = require("./vsfun");
+require("./logger");
 const got = require("got");
-//const express = require("express");
-//const app = express();
-let log = vscode.window.createOutputChannel("xart");
-log.show();
-//
-console.log(
-  "http.proxy:" + vscode.workspace.getConfiguration("http").get("proxy")
-);
-if (vscode.workspace.getConfiguration("http").get("proxy")) {
-  setConfig(
-    "httpProxy",
-    vscode.workspace.getConfiguration("http").get("proxy")
-  );
-  /*const httpProxyUrl = new URL(
+
+/*const httpProxyUrl = new URL(
     vscode.workspace.getConfiguration("http").get("proxy")
   );
   console.log(httpProxyUrl.hostname, httpProxyUrl.port);
@@ -39,7 +19,6 @@ if (vscode.workspace.getConfiguration("http").get("proxy")) {
     //proxyAuth: 'userId:password', // optional authentication
     //sockets: 50 // optional pool size for each http and https
   });*/
-}
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed

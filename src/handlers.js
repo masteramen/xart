@@ -8,7 +8,8 @@ const sleep = require("./sleep");
 const translatorCn = require("./translator_cn");
 const { open } = require("./vsfun");
 const { postsFolder, draftsFolder, jekyllHome } = require("./config");
-
+const vscode = require("vscode");
+//const console = require("./logger");
 function getImageMd5FileName(url) {
   let subfix = url.split(".").pop();
   if (subfix.length > 4) {
@@ -22,9 +23,17 @@ function handleChangeMD(filePath) {
   if (filePath.indexOf("_posts") > -1) {
     if (deployTimer) clearTimeout(deployTimer);
     deployTimer = setTimeout(() => {
-      shell.exec(`hexo g -d `, {
-        cwd: jekyllHome
-      });
+      const action = "deploy";
+
+      vscode.window
+        .showInformationMessage(`run hexo generate and deploy?`, action)
+        .then(selectedAction => {
+          if (selectedAction === action) {
+            shell.exec(`hexo g -d `, {
+              cwd: jekyllHome
+            });
+          }
+        });
     }, 1000 * 60 * 10);
     return;
   }
