@@ -6,9 +6,9 @@ const { axios } = require("./configAxios.js");
 const md5 = require("./md5");
 const sleep = require("./sleep");
 const translatorCn = require("./translator_cn");
-const {open} = require('./vsfun');
-const { postsFolder, draftsFolder } = require("./config");
-const vscode = require("vscode");
+const { open } = require("./vsfun");
+const { postsFolder, draftsFolder, jekyllHome } = require("./config");
+
 function getImageMd5FileName(url) {
   let subfix = url.split(".").pop();
   if (subfix.length > 4) {
@@ -16,8 +16,18 @@ function getImageMd5FileName(url) {
   } else subfix = `.${subfix}`;
   return `${md5(url)}${subfix}`;
 }
+let deployTimer;
 function handleChangeMD(filePath) {
   if (!filePath.endsWith(".md")) return;
+  if (filePath.indexOf("_posts") > -1) {
+    if (deployTimer) clearTimeout(deployTimer);
+    deployTimer = setTimeout(() => {
+      shell.exec(`hexo g -d `, {
+        cwd: jekyllHome
+      });
+    }, 1000 * 60 * 10);
+    return;
+  }
   console.log("handleChangeMD start");
   return (async () => {
     try {
@@ -152,21 +162,20 @@ function handleChangeMD(filePath) {
       } else if (published === "deleted") {
         console.log(`delete folder ${path.dirname(filePath)}`);
         shell.rm("-rf", path.dirname(filePath));
-      }else{
+      } else {
         const postfm = fm(fs.readFileSync(filePath, "utf8"));
         const { title } = postfm.attributes;
-        let titleFileName=title+'.md';
-        let newFilePath = path.dirname(filePath)+'/'+titleFileName;
-        if(path.basename(filePath)!=titleFileName){
-           setTimeout(()=>{
-            shell.mv(filePath,newFilePath);
+        let titleFileName = title + ".md";
+        let newFilePath = path.dirname(filePath) + "/" + titleFileName;
+        if (path.basename(filePath) != titleFileName) {
+          setTimeout(() => {
+            shell.mv(filePath, newFilePath);
             //if(vscode.window.activeTextEditor.document.uri.fsPath==filePath){
-              console.log(`newFilePath:${newFilePath}`);
-              open(newFilePath);
-           // }
-           },200) ;
+            console.log(`newFilePath:${newFilePath}`);
+            open(newFilePath);
+            // }
+          }, 200);
         }
-
       }
       // console.log(postfm);
     } catch (e) {
