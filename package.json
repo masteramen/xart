@@ -12,7 +12,7 @@
   ],
   "activationEvents": [
     "*",
-    "onCommand:extension.sayHello"
+    "onCommand:extension.startSayHello"
   ],
   "main": "./src/extension",
   "contributes": {
@@ -24,6 +24,18 @@
       {
         "command": "extension.newPost",
         "title": "Create New Post"
+      },
+      {
+        "command": "extension.startTranslate",
+        "title": "startTranslate"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "extension.startTranslate",
+        "key": "ctrl+t",
+        "mac": "cmd+t",
+        "when": "editorTextFocus"
       }
     ]
   },

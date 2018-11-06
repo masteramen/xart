@@ -6,6 +6,8 @@ const { StatusBarAlignment, window } = vscode;
 const { writeOpenArticle } = require("./md");
 const { draftsFolder, portIsOccupied } = require("./config");
 const { open } = require("./vsfun");
+var translate = require("./translate");
+
 require("./logger");
 const got = require("got");
 
@@ -64,7 +66,7 @@ function activate(context) {
   let currentPanel = undefined;
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("extension.sayHello", () => {
+    vscode.commands.registerCommand("extension.startSayHello", () => {
       let columnToShowIn = vscode.ViewColumn.Beside;
       //vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
 
@@ -111,6 +113,30 @@ function activate(context) {
       }
     })
   );
+  context.subscriptions.push(vscode.commands.registerCommand('extension.startTranslate', function () {
+    // The code you place here will be executed every time your command is executed
+
+    var editor = vscode.window.activeTextEditor;
+
+    if (!editor) {
+        console.log('no open thext editor!');
+        return; // No open text editor
+    }
+
+    var selection = editor.selection;
+    var text = editor.document.getText(selection);
+
+    if(!text){
+        return;
+    }
+
+    (async()=>{
+      let translateResult = await translate(text, { raw: true, to: "zh-CN" });
+      vscode.window.showInformationMessage(translateResult);
+    })();
+
+
+}));
 
   /*let disposable = vscode.commands.registerCommand(
     "extension.sayHello",
