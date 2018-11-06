@@ -36,7 +36,7 @@ function activate(context) {
   let port = 3888;
   status.text = `-${port}-`;
   status.show();
-  status.command = "extension.sayHello";
+  status.command = "extension.startSayHello";
   context.subscriptions.push(status);
   portIsOccupied(port)
     .then(() => {
@@ -132,6 +132,7 @@ function activate(context) {
 
     (async()=>{
       let translateResult = await translate(text, { raw: true, to: "zh-CN" });
+	    console.log(translateResult);
       vscode.window.showInformationMessage(translateResult);
     })();
 
