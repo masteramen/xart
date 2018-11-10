@@ -142,9 +142,10 @@ function activate(context) {
       }
 
       (async () => {
-        let translateResult = await translate(text.trim(), {
+        let rawText = text.trim();
+        let translateResult = await translate(rawText, {
           raw: true,
-          to: "zh-CN"
+          to: escape(rawText).indexOf("%u") < 0 ? "zh-CN" : "en"
         });
         console.log(translateResult);
         vscode.window.showInformationMessage(translateResult);
