@@ -113,31 +113,44 @@ function activate(context) {
       }
     })
   );
-  context.subscriptions.push(vscode.commands.registerCommand('extension.startTranslate', function () {
-    // The code you place here will be executed every time your command is executed
+  context.subscriptions.push(
+    vscode.commands.registerCommand("extension.startTranslate", function() {
+      // The code you place here will be executed every time your command is executed
 
-    var editor = vscode.window.activeTextEditor;
+      var editor = vscode.window.activeTextEditor;
 
-    if (!editor) {
-        console.log('no open thext editor!');
+      if (!editor) {
+        console.log("no open thext editor!");
         return; // No open text editor
-    }
+      }
 
-    var selection = editor.selection;
-    var text = editor.document.getText(selection);
+      if (editor.selection.isEmpty) {
+        const position = editor.selection.active;
+        var startPosition = position.with(position.line, 0);
+        //var endPosition = position.with(position.line + 1, 0);
+        let endPosition = new vscode.Position(
+          position.line,
+          editor.document.lineAt(position.line).range.end.character
+        );
+        var newSelection = new vscode.Selection(startPosition, endPosition);
+        editor.selection = newSelection;
+      }
+      var text = editor.document.getText(editor.selection);
 
-    if(!text){
+      if (!text) {
         return;
-    }
+      }
 
-    (async()=>{
-      let translateResult = await translate(text, { raw: true, to: "zh-CN" });
-	    console.log(translateResult);
-      vscode.window.showInformationMessage(translateResult);
-    })();
-
-
-}));
+      (async () => {
+        let translateResult = await translate(text.trim(), {
+          raw: true,
+          to: "zh-CN"
+        });
+        console.log(translateResult);
+        vscode.window.showInformationMessage(translateResult);
+      })();
+    })
+  );
 
   /*let disposable = vscode.commands.registerCommand(
     "extension.sayHello",
@@ -194,6 +207,40 @@ function activate(context) {
     }
   );
   context.subscriptions.push(newPost);
+  /*
+  let disposable = vscode.commands.registerCommand(
+    "extension.selectLine",
+    () => {
+      let editor = vscode.window.activeTextEditor;
+      if (!editor) {
+        return;
+      }
+
+      let { document, selections } = editor;
+
+      editor.selections = selections.map(s => {
+        // active.line is zero based while document.lineCount aren't
+        // therefore s.active.line is increased by one here
+        let currentLine = s.active.line + 1;
+        let selectionFirst = new vscode.Position(s.start.line, 0);
+
+        // expand selection to current line forward
+        if (document.lineCount > currentLine) {
+          let selectionForward = new vscode.Position(currentLine, 0);
+          return new vscode.Selection(selectionFirst, selectionForward);
+        }
+
+        // default expand selection to current line
+        let selectionCurrentLine = new vscode.Position(
+          s.active.line,
+          document.lineAt(s.active.line).range.end.character
+        );
+        return new vscode.Selection(selectionFirst, selectionCurrentLine);
+      });
+    }
+  );
+
+  context.subscriptions.push(disposable);*/
 }
 exports.activate = activate;
 
