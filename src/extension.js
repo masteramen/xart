@@ -38,6 +38,7 @@ function activate(context) {
   status.show();
   status.command = "extension.startSayHello";
   context.subscriptions.push(status);
+
   portIsOccupied(port)
     .then(() => {
       return require("./app")(context, port);
@@ -113,6 +114,12 @@ function activate(context) {
       }
     })
   );
+
+  const translateStatus = window.createStatusBarItem(StatusBarAlignment.Right, 100);
+  translateStatus.text = `translate...`;
+  context.subscriptions.push(translateStatus);
+  translateStatus.hide();
+  
   context.subscriptions.push(
     vscode.commands.registerCommand("extension.startTranslate", function() {
       // The code you place here will be executed every time your command is executed
@@ -143,12 +150,24 @@ function activate(context) {
 
       (async () => {
         let rawText = text.trim();
+        
+
+        translateStatus.show();
+
         let translateResult = await translate(rawText, {
           raw: true,
           to: escape(rawText).indexOf("%u") < 0 ? "zh-CN" : "en"
         });
         console.log(translateResult);
         vscode.window.showInformationMessage(translateResult);
+       
+        setTimeout(()=>{
+          vscode.commands.executeCommand("notifications.focusLastToast");
+          vscode.commands.executeCommand("notification.expand");
+         console.log('notification.expand');
+         translateStatus.hide();
+
+        },200);
       })();
     })
   );
