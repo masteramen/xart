@@ -159,6 +159,9 @@ function activate(context) {
           to: escape(rawText).indexOf("%u") < 0 ? "zh-CN" : "en"
         });
         console.log(translateResult);
+        
+        vscode.commands.executeCommand("notifications.hideToasts");
+
         vscode.window.showInformationMessage(translateResult);
        
         setTimeout(()=>{
