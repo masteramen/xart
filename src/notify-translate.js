@@ -23,7 +23,7 @@ gkm.events.on('key.*', data => {
       let rawText = ncp.paste().trim();
       if(rawText)translate(rawText, {
           raw: true,
-          to: escape(rawText).indexOf("%u") < 0 ? "zh-CN" : "en"
+          to: escape(rawText).split('%u').length<5 ? "zh-CN" : "en"
         }).then(result=>{
           console.log(result);
           notifier.notify(
