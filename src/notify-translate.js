@@ -48,5 +48,7 @@ let listener = data => {
 
   }
 };
+if(process.platform!=='darwin'){
 gkm.events.on('key.pressed',listener );
 gkm.events.on('key.released',listener );
+}
