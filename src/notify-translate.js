@@ -34,9 +34,8 @@ let listener = data => {
   console.log(data);
   const button = data[0];
 
-  if (gkm.events.event === "key.pressed") {
-    if (button.indexOf("Control") > -1) keys["CTRL"] = 1;
-    else if (button.indexOf("Meta") > -1) keys["CTRL"] = 1;
+  if (button.indexOf("Control") > -1 || button.indexOf("Meta") > -1) {
+    keys["CTRL"] = gkm.events.event === "key.pressed" ? 1 : 0;
   }
 
   if (
