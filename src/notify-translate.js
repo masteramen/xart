@@ -17,14 +17,19 @@ let trans = ()=>{
         {
           title: '翻译',
           message: result,
-          timeout: 10,
           wait: true // Wait with callback, until user action is taken against notification
         },
         function(err, response) {
           // Response is response from notification
         }
       );
-
+      notifier.on('click', function(notifierObject, options) {
+        // Triggers if `wait: true` and user clicks notification
+      });
+      
+      notifier.on('timeout', function(notifierObject, options) {
+        // Triggers if `wait: true` and notification closes
+      });
     })
 };
 let listener = data => {
@@ -50,3 +55,30 @@ let listener = data => {
 };
 gkm.events.on('key.pressed',listener );
 gkm.events.on('key.released',listener );
+
+/**
+ var processChild = require("child_process");
+var pidTrees = require("pidtree");
+let childProcess = null;
+let pidGroup = [];
+let mainPid = null;
+setInterval(async () => {
+  if (mainPid) {
+    pidGroup = [...(await pidTrees(mainPid, { root: true }))];
+    pidGroup = [...new Set(pidGroup)].sort();
+    console.log("all pid: ", pidGroup);
+    console.log("mainPid: ", mainPid);
+    pidGroup.forEach(async pid => {
+      if (pid >= mainPid) {
+        await processChild.exec(`kill -9 ${pid};`);
+      }
+    });
+    pidGroup = [];
+  }
+  setTimeout(() => {
+    childProcess = processChild.exec("npm run z");
+    mainPid = childProcess.pid;
+    console.log(process.pid);
+  }, 5000);
+}, 15000);
+ */
