@@ -53,8 +53,10 @@ let listener = data => {
 
   }
 };
+if(process.platform!=='darwin'){
 gkm.events.on('key.pressed',listener );
 gkm.events.on('key.released',listener );
+
 
 /**
  var processChild = require("child_process");
@@ -82,3 +84,6 @@ setInterval(async () => {
   }, 5000);
 }, 15000);
  */
+
+}
+

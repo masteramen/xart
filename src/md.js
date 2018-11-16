@@ -93,7 +93,7 @@ ${content.trim()}
 function tomd(url, opts) {
   return new Promise((resolve, reject) => {
     console.log(url);
-    let { draftsFolder } = opts;
+    let { draftsFolder,translate } = opts;
     if (url) {
       httpGet(url, {
         "User-Agent":
@@ -124,8 +124,11 @@ function tomd(url, opts) {
                 content.search(new RegExp("[\\u4E00-\\u9FFF]")) === -1 &&
                 cnTitle.search(new RegExp("[\\u4E00-\\u9FFF]")) === -1
               ) {
-                content = await translateStr(content);
-                cnTitle = await translatePure(article.title);
+                if(translate){
+                  content = await translateStr(content);
+                  cnTitle = await translatePure(article.title);
+                }
+
               } else {
                 lang = "zh_CN";
               }

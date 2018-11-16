@@ -6,20 +6,22 @@ html
     span still 
     span#time
     - let actUrl = "/act?url="+encodeURIComponent(url);
+    - let translateUrl = "/act?translate=yes&url="+encodeURIComponent("!{url}");
     span  seconds would redirect to 
     a(href=actUrl) add 
     span or go to 
-    a(href=draft_url) drafts
+    a(href=draft_url) drafts,
+    a(href=translateUrl) translate,
 
    script.
-    var seconds = 3;
+    var seconds = 5;
     var ts = setInterval(function(){
       seconds = seconds -1;
       document.querySelector('#time').innerText=seconds;
       if(seconds<1){
         clearInterval(ts);
         console.log('redirect');
-        window.location =  "/act?url="+encodeURIComponent("!{url}");
+        window.location =  "/act?translate=no&url="+encodeURIComponent("!{url}");
       }
     },1000);
     

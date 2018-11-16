@@ -102,7 +102,7 @@ function startServer(context, port) {
     });
 
     app.get("/act", (req, res) => {
-      const { url, inBrowser } = req.query;
+      const { url, inBrowser,translate } = req.query;
       console.log(url);
 
       (async () => {
@@ -123,7 +123,8 @@ function startServer(context, port) {
           tomd(url, {
             ...req.query,
             draftsFolder: draftsFolder,
-            callback: open
+            callback: open,
+            translate:translate==='yes'
           });
         }
       })();
