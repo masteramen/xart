@@ -9,7 +9,7 @@ const { open } = require("./vsfun");
 var translate = require("./translate");
 
 require("./logger");
-require("./notify-translate");
+//require("./notify-translate");
 const got = require("got");
 
 /*const httpProxyUrl = new URL(
