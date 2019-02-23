@@ -8,13 +8,15 @@ require("./logger");
 const got = require("got");
 
 async function getWebviewContent(url) {
+  console.log(url);
   const response = await got(url);
   return response.body;
 }
+const port = 3999;
+
 function activate(context) {
   console.log('Congratulations, your extension "xart" is now active!');
   const status = window.createStatusBarItem(StatusBarAlignment.Right, 100);
-  let port = 3999;
   status.text = `-${port}-`;
   status.show();
   status.command = "extension.startSayHello";
@@ -47,7 +49,7 @@ function activate(context) {
           columnToShowIn,
           { enableScripts: true, retainContextWhenHidden: true }
         );
-        getWebviewContent("http://localhost:3888").then(html => {
+        getWebviewContent(`http://localhost:${port}`).then(html => {
           currentPanel.webview.html = html;
         });
         currentPanel.webview.onDidReceiveMessage(
@@ -55,7 +57,7 @@ function activate(context) {
             switch (message.command) {
               case "open":
                 getWebviewContent(
-                  `http://localhost:3888/${decodeURIComponent(message.text)}`
+                  `http://localhost:${port}/${decodeURIComponent(message.text)}`
                 );
                 return;
               case "alert":

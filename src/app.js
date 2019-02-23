@@ -7,7 +7,7 @@ const glob = require("glob");
 const vscode = require("vscode");
 //const console = require("./logger");
 
-const { jekyllHome, postsFolder, draftsFolder } = require("./config");
+const { jekyllHome, postsFolder, getDraftFolders } = require("./config");
 
 const { handleChangeMD } = require("./handlers");
 const md5 = require("./md5");
@@ -102,12 +102,12 @@ function startServer(context, port) {
     });
 
     app.get("/act", (req, res) => {
-      const { url, inBrowser,translate } = req.query;
+      const { url, inBrowser, translate } = req.query;
       console.log(url);
 
       (async () => {
         const first = glob
-          .sync(`${draftsFolder}/**/*${md5(url)}.md`)
+          .sync(`${getDraftFolders()}/**/*${md5(url)}.md`)
           .concat(glob.sync(`${postsFolder}/**/*${md5(url)}.md`));
         if (first.length > 0) {
           console.log(first[0]);
@@ -122,9 +122,9 @@ function startServer(context, port) {
           res.send(result);
           tomd(url, {
             ...req.query,
-            draftsFolder: draftsFolder,
+            draftsFolder: getDraftFolders(),
             callback: open,
-            translate:translate==='yes'
+            translate: translate === "yes"
           });
         }
       })();
@@ -140,7 +140,7 @@ function startServer(context, port) {
         url.startsWith("http://www.jfox.info")
       ) {
         if (fileName) {
-          let draftFile = `${draftsFolder}${fileName}/*.md`;
+          let draftFile = `${getDraftFolders()}${fileName}/*.md`;
           let postFile = `${postsFolder}${fileName}/*.md`;
           console.log(draftFile);
           console.log(postFile);
@@ -154,8 +154,9 @@ function startServer(context, port) {
     });
 
     app.get("/", (req, res) => {
-      const targetPath = draftsFolder;
+      const targetPath = getDraftFolders();
       // var files = fs.readdirSync(targetPath);
+      console.log(`index list ${targetPath}`);
       const files = fs
         .readdirSync(targetPath)
         .map(f => {
@@ -177,7 +178,7 @@ function startServer(context, port) {
     app.get("/edit", (req, res) => {
       console.log(req.query.fileName);
 
-      const targetPath = draftsFolder;
+      const targetPath = getDraftFolders();
 
       const filename = req.query.fileName;
       const filePath = path.join(targetPath, filename);
@@ -199,7 +200,7 @@ function startServer(context, port) {
     let server = app.listen(port, () => {
       console.log(`Example app listening on port ${port}!`);
 
-      const watcher = chokidar.watch(draftsFolder, {
+      const watcher = chokidar.watch(getDraftFolders(), {
         ignored: /[/\\]\./,
         persistent: true
       });

@@ -12,7 +12,7 @@ function getPostFolders() {
     vscode.workspace
       .getConfiguration("xart.extension.config")
       .get("location")
-      .replace("~", userHome) + "/_posts/"
+      .replace("~", userHome) + "/source/_posts/"
   );
 }
 function getDraftFolders() {
@@ -20,7 +20,7 @@ function getDraftFolders() {
     vscode.workspace
       .getConfiguration("xart.extension.config")
       .get("location")
-      .replace("~", userHome) + "/_drafts/"
+      .replace("~", userHome) + "/source/_drafts/"
   );
 }
 function portIsOccupied(port) {

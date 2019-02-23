@@ -21,20 +21,6 @@ let deployTimer;
 function handleChangeMD(filePath) {
   if (!filePath.endsWith(".md")) return;
   if (filePath.indexOf("_posts") > -1) {
-    if (deployTimer) clearTimeout(deployTimer);
-    deployTimer = setTimeout(() => {
-      const action = "deploy";
-
-      vscode.window
-        .showInformationMessage(`run hexo generate and deploy?`, action)
-        .then(selectedAction => {
-          if (selectedAction === action) {
-            shell.exec(`hexo g -d `, {
-              cwd: jekyllHome
-            });
-          }
-        });
-    }, 1000 * 60 * 10);
     return;
   }
   console.log("handleChangeMD start");
@@ -154,12 +140,10 @@ function handleChangeMD(filePath) {
           afterProcessData.push(line);
         }
 
+        console.log(`update ${postFilePath}`);
         fs.writeFileSync(postFilePath, afterProcessData.join("\n").trim());
         console.log(`postfm.attributes.lang:${postfm.attributes.lang}`);
-        if (postfm.attributes.lang !== "zh_CN") {
-          console.log(`translate to :${postFilePath}`);
-          translatorCn(postFilePath, postFilePath);
-        }
+
         allPostFiles.push(postFileName);
         shell
           .ls(folder)
