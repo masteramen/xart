@@ -3,7 +3,12 @@ const { URL } = require("url");
 const net = require("net");
 const vscode = require("vscode");
 
-const hexoHome = userHome + "/git/hexo";
+let hexoHome = vscode.workspace
+  .getConfiguration("xart.extension.config")
+  .get("location")
+  .replace("~", userHome);
+
+//const hexoHome = userHome + "/git/hexo";
 const jekyllHome = `${hexoHome}/source/`;
 const postsFolder = `${jekyllHome}_posts/`;
 const draftsFolder = `${jekyllHome}_drafts/`;
