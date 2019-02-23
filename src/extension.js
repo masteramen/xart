@@ -14,7 +14,7 @@ async function getWebviewContent(url) {
 function activate(context) {
   console.log('Congratulations, your extension "xart" is now active!');
   const status = window.createStatusBarItem(StatusBarAlignment.Right, 100);
-  let port = 3888;
+  let port = 3999;
   status.text = `-${port}-`;
   status.show();
   status.command = "extension.startSayHello";
