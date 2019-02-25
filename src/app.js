@@ -7,7 +7,7 @@ const glob = require("glob");
 const vscode = require("vscode");
 //const console = require("./logger");
 
-const { jekyllHome, postsFolder, getDraftFolders } = require("./config");
+const { getWorkHome, postsFolder, getDraftFolders,getAutoCommitAndPush } = require("./config");
 
 const { handleChangeMD } = require("./handlers");
 const md5 = require("./md5");
@@ -42,18 +42,20 @@ function getPostFile(dir) {
 }
 
 function build(time) {
+  if(getAutoCommitAndPush()==false)return;
+  let workHome = getWorkHome();
   setTimeout(() => {
-    if (fs.existsSync(jekyllHome)) {
+    if (fs.existsSync(workHome)) {
       console.log(`git commit -am "auto commit ${new Date()}"`);
       shell.exec(`git add .`, {
-        cwd: jekyllHome
+        cwd: workHome
       });
       let ret = shell.exec(`git commit -am "auto commit ${new Date()}"`, {
-        cwd: jekyllHome
+        cwd: workHome
       });
-      shell.exec(`git push`, { cwd: jekyllHome });
+      shell.exec(`git push`, { cwd: workHome });
     } else {
-      console.log(`${jekyllHome} folder not exists!`);
+      console.log(`${workHome} folder not exists!`);
     }
   }, 10000);
   setTimeout(() => {
@@ -89,7 +91,7 @@ function startServer(context, port) {
         // vscode.window.showInformationMessage(result.toString());
       }
       console.log(`result:${result}`);
-      let ret = shell.exec("git pull ", { cwd: jekyllHome });
+      let ret = shell.exec("git pull ", { cwd: getWorkHome() });
     }, 3000);
 
     app.use((req, res, next) => {

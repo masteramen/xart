@@ -1,28 +1,39 @@
 const userHome = require("user-home");
 const vscode = require("vscode");
 const net = require("net");
-
-let hexoHome = vscode.workspace
-  .getConfiguration("xart.extension.config")
-  .get("location")
-  .replace("~", userHome);
-
+//https://juejin.im/post/59decff851882578c2084b5b
+//https://tboox.org/cn/2017/10/11/xmake-vscode/
 function getPostFolders() {
   return (
-    vscode.workspace
-      .getConfiguration("xart.extension.config")
-      .get("location")
+      getWorkHome()
       .replace("~", userHome) + "/source/_posts/"
   );
 }
-function getDraftFolders() {
+
+function getAutoCommitAndPush() {
   return (
     vscode.workspace
-      .getConfiguration("xart.extension.config")
-      .get("location")
+      .getConfiguration("xart")
+      .get("autoCommitAndPush",false)
+  );
+}
+
+function getDraftFolders() {
+  return (
+      getWorkHome()
       .replace("~", userHome) + "/source/_drafts/"
   );
 }
+
+function getWorkHome() {
+  return (
+    vscode.workspace
+      .getConfiguration("xart")
+      .get("location")
+      .replace("~", userHome) 
+  );
+}
+
 function portIsOccupied(port) {
   const server = net.createServer().listen(port);
   return new Promise((resolve, reject) => {
@@ -43,16 +54,10 @@ function portIsOccupied(port) {
     });
   });
 }
-//const hexoHome = userHome + "/git/hexo";
-const jekyllHome = `${hexoHome}/source/`;
-const postsFolder = `${jekyllHome}_posts/`;
-const draftsFolder = `${jekyllHome}_drafts/`;
 
 module.exports = {
-  jekyllHome,
-  postsFolder,
-  draftsFolder,
+  getWorkHome,
   getPostFolders,
   getDraftFolders,
-  portIsOccupied
+  portIsOccupied,getAutoCommitAndPush
 };
