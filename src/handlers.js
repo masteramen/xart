@@ -2,22 +2,17 @@ const path = require("path");
 const fs = require("fs");
 const fm = require("front-matter");
 const shell = require("shelljs");
-const { axios } = require("./configAxios.js");
-const md5 = require("./md5");
 const sleep = require("./sleep");
-const translatorCn = require("./translator_cn");
 const { open } = require("./vsfun");
 const { postsFolder, draftsFolder, jekyllHome } = require("./config");
-const vscode = require("vscode");
 //const console = require("./logger");
 function getImageMd5FileName(url) {
   let subfix = url.split(".").pop();
   if (subfix.length > 4) {
     subfix = "";
   } else subfix = `.${subfix}`;
-  return `${md5(url)}${subfix}`;
+  return ``;
 }
-let deployTimer;
 function handleChangeMD(filePath) {
   if (!filePath.endsWith(".md")) return;
   if (filePath.indexOf("_posts") > -1) {
