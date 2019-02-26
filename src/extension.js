@@ -3,6 +3,7 @@ const { StatusBarAlignment, window } = vscode;
 const { writeOpenArticle } = require("./md");
 const { portIsOccupied } = require("./config");
 const { open } = require("./vsfun");
+const { monitorWorkHome,startServer,commit } = require("./app");
 
 require("./logger");
 const got = require("got");
@@ -19,11 +20,11 @@ function activate(context) {
   const status = window.createStatusBarItem(StatusBarAlignment.Right, 100);
   status.text = `-${port}-`;
   status.show();
-  status.command = "extension.startSayHello";
+  status.command = "extension.showDraftList";
   context.subscriptions.push(status);
   portIsOccupied(port)
     .then(() => {
-      return require("./app")(context, port);
+      return startServer(context, port);
     })
     .then(() => {
       status.text = `${port}`;
@@ -37,7 +38,7 @@ function activate(context) {
   let currentPanel = undefined;
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("extension.startSayHello", () => {
+    vscode.commands.registerCommand("extension.showDraftList", () => {
       let columnToShowIn = vscode.ViewColumn.Beside;
 
       if (currentPanel) {
@@ -79,6 +80,23 @@ function activate(context) {
       }
     })
   );
+
+  const commitStatus = window.createStatusBarItem(StatusBarAlignment.Right, 100);
+  commitStatus.text = `commmited`;
+  monitorWorkHome(function(status){
+    if(status){
+      commitStatus.text = status;
+      commitStatus.show();
+    }else{
+      commitStatus.hide();
+    }
+  });
+  commitStatus.command = "extension.commitStatus";
+  context.subscriptions.push(
+    vscode.commands.registerCommand("extension.commitStatus", () => {
+      commit();
+    }));
+
 
   let newPost = vscode.commands.registerCommand(
     "extension.newPost",

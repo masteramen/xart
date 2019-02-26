@@ -41,25 +41,53 @@ function getPostFile(dir) {
   return null;
 }
 
-function build(time) {
-  if(getAutoCommitAndPush()==false)return;
+function commit(){
   let workHome = getWorkHome();
+  if (fs.existsSync(workHome)) {
+    console.log(`git commit -am "auto commit ${new Date()}"`);
+    shell.exec(`git add .`, {
+      cwd: workHome
+    });
+    let ret = shell.exec(`git commit -am "auto commit ${new Date()}"`, {
+      cwd: workHome
+    });
+    shell.exec(`git push`, { cwd: workHome });
+  } else {
+    console.log(`${workHome} folder not exists!`);
+  }
+}
+let workHomeChangeCallBack;
+function monitorWorkHome(callback){
+
+  if(callback) workHomeChangeCallBack = callback;
+  let workHome = getWorkHome();
+  if (fs.existsSync(workHome)) {
+    console.log(`git status ${new Date()}"`);
+    let ret = shell.exec(`git status`, {
+      cwd: workHome
+    },function(code,result){
+      console.log('result:');
+      console.log(code);
+      console.log(result);
+      if(result.indexOf('Your branch is up to dat')<0){
+        workHomeChangeCallBack("Change");
+      }else{
+        workHomeChangeCallBack("Commited");
+      }
+    });
+
+  } else {
+    console.log(`${workHome} folder not exists!`);
+  }
+}
+
+function loopCommit(time) {
+  if(getAutoCommitAndPush()==false)return;
   setTimeout(() => {
-    if (fs.existsSync(workHome)) {
-      console.log(`git commit -am "auto commit ${new Date()}"`);
-      shell.exec(`git add .`, {
-        cwd: workHome
-      });
-      let ret = shell.exec(`git commit -am "auto commit ${new Date()}"`, {
-        cwd: workHome
-      });
-      shell.exec(`git push`, { cwd: workHome });
-    } else {
-      console.log(`${workHome} folder not exists!`);
-    }
+    commit();
   }, 10000);
   setTimeout(() => {
-    build(time);
+    loopCommit(time);
   }, time);
 }
 
@@ -234,7 +262,7 @@ function startServer(context, port) {
         .on("raw", (event, filePath, details) => {
           log("Raw event info:", event, filePath, details);
         });
-      build(1000 * 60 * 60 * 3);
+        loopCommit(1000 * 60 * 60 * 3);
       resolve();
     });
 
@@ -251,4 +279,4 @@ function startServer(context, port) {
   });
 }
 
-module.exports = startServer;
+module.exports = {commit,startServer,monitorWorkHome};

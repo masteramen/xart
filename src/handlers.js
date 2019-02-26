@@ -4,7 +4,8 @@ const fm = require("front-matter");
 const shell = require("shelljs");
 const sleep = require("./sleep");
 const { open } = require("./vsfun");
-const { postsFolder, draftsFolder, jekyllHome } = require("./config");
+const { getPostFolders, getDraftFolders} = require("./config");
+const {monitorWorkHome} = require("./app"); 
 //const console = require("./logger");
 function getImageMd5FileName(url) {
   let subfix = url.split(".").pop();
@@ -14,6 +15,9 @@ function getImageMd5FileName(url) {
   return ``;
 }
 function handleChangeMD(filePath) {
+  (async ()=>{
+    monitorWorkHome();
+  });
   if (!filePath.endsWith(".md")) return;
   if (filePath.indexOf("_posts") > -1) {
     return;
@@ -28,8 +32,7 @@ function handleChangeMD(filePath) {
       let { date } = postfm.attributes;
       date = new Date(date);
 
-      const folder = `${postsFolder}${date.getFullYear()}/${fileName}/`;
-      const draftFolder = `${draftsFolder}${fileName}/`;
+      const folder = `${getDraftFolders()}${date.getFullYear()}/${fileName}/`;
       const postFileName = `${date.getFullYear()}-${`0${date.getMonth() +
         1}`.substr(-2, 2)}-${`0${date.getDate()}`.substr(
         -2,
@@ -43,100 +46,9 @@ function handleChangeMD(filePath) {
         } catch (e) {}
 
         const fileContent = fs.readFileSync(filePath, "utf8");
-        const data = fileContent.split("\n");
-        const afterProcessData = [];
-        const downloadedUrls = [];
         const allPostFiles = [];
-        // download remote resource to jekyllPosts
-        for (let i = 0; i < data.length; i += 1) {
-          let line = data[i];
-          let result;
-          const myRegexp = /(!\[.*?\]\()(.*?)(\))/g;
-          // eslint-disable-next-line no-cond-assign
-          while ((result = myRegexp.exec(line))) {
-            const url = result[2];
-            console.log(url);
-            if (
-              url.match(/^http[s]?:\/\//) &&
-              downloadedUrls.indexOf(url) === -1
-            ) {
-              const md5FileName = getImageMd5FileName(url);
-              const resFilePath = folder + md5FileName;
-              console.log(url);
-              console.log(resFilePath);
-              try {
-                if (!fs.existsSync(resFilePath)) {
-                  let headers = {
-                    referer: source,
-                    "user-agent":
-                      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36"
-                  };
-                  console.log(`download resource ${url} to ${resFilePath}`);
-                  // eslint-disable-next-line no-await-in-loop
-                  /*await request({
-                      url,
-                      headers: {
-                        referer: source,
-                        "user-agent":
-                          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36"
-                      }
-                    }).on("response", r => {
-                      if (r.statusCode === 200) {
-                        r.pipe(fs.createWriteStream(resFilePath));
-                      } else {
-                        console.log(`status code :${r.statusCode}`);
-                      }
-                    });*/
-                  // eslint-disable-next-line no-await-in-loop
-                  await axios({
-                    method: "get",
-                    url: url,
-                    responseType: "stream",
-                    headers: headers
-                  }).then(response => {
-                    console.log(` status:${response.status}`);
-                    if (response.status === 200) {
-                      console.log(resFilePath);
-                      response.data.pipe(fs.createWriteStream(resFilePath));
-                      downloadedUrls.push(url);
-                    }
-                  });
-                  await sleep(1000);
-                } else {
-                  console.log(`resource ${url} exists in ${resFilePath}`);
-                }
-              } catch (e) {
-                console.log(`download resource ${url} fail:${e}`);
-              }
-            }
-          }
-          // replace remote resource to local
-          line = line.replace(/(!\[.*?\]\()(.*?)(\))/, (
-            match,
-            p1,
-            url,
-            p3 /* , offset, string */
-          ) => {
-            const encodeUrl = getImageMd5FileName(url);
-            allPostFiles.push(encodeUrl);
-            const draftPath = draftFolder + encodeUrl;
-            const postPath = folder + encodeUrl;
-            if (fs.existsSync(draftPath) && !fs.existsSync(postPath)) {
-              fs.createReadStream(draftPath).pipe(
-                fs.createWriteStream(postPath)
-              );
-              console.log(`copy res from ${draftPath} to ${postPath}`);
-            }
-            console.log(`url ${url} replace to ${encodeUrl}`);
 
-            return p1 + encodeUrl + p3;
-          });
-
-          afterProcessData.push(line);
-        }
-
-        console.log(`update ${postFilePath}`);
-        fs.writeFileSync(postFilePath, afterProcessData.join("\n").trim());
+        fs.writeFileSync(postFilePath, fileContent.trim());
         console.log(`postfm.attributes.lang:${postfm.attributes.lang}`);
 
         allPostFiles.push(postFileName);
