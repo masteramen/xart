@@ -52,6 +52,7 @@ function commit(){
       cwd: workHome
     });
     shell.exec(`git push`, { cwd: workHome });
+    monitorWorkHome();
   } else {
     console.log(`${workHome} folder not exists!`);
   }
@@ -69,8 +70,8 @@ function monitorWorkHome(callback){
       console.log('result:');
       console.log(code);
       console.log(result);
-      if(result.indexOf('Your branch is up to dat')<0){
-        workHomeChangeCallBack("Change");
+      if(result.indexOf('git add')>-1){
+        workHomeChangeCallBack("No Commit");
       }else{
         workHomeChangeCallBack("Commited");
       }
@@ -160,29 +161,6 @@ function startServer(context, port) {
       })();
     });
 
-    app.get("/hello", (req, res) => {
-      const { url, fileName } = req.query;
-      // console.log(url);
-      console.log(req.host);
-      console.log("fileName:" + fileName);
-      if (
-        url.startsWith("http://localhost") ||
-        url.startsWith("http://www.jfox.info")
-      ) {
-        if (fileName) {
-          let draftFile = `${getDraftFolders()}${fileName}/*.md`;
-          let postFile = `${postsFolder}${fileName}/*.md`;
-          console.log(draftFile);
-          console.log(postFile);
-          const first = glob.sync(draftFile).concat(glob.sync(postFile));
-          if (first.length > 0) open(first[0]);
-        }
-        const result =
-          "<html><head><script>history.go(-1);</script></head></html>";
-        res.send(result);
-      } else res.render("hello", { url, draft_url: "http://localhost:3888" });
-    });
-
     app.get("/", (req, res) => {
       const targetPath = getDraftFolders();
       // var files = fs.readdirSync(targetPath);
@@ -237,29 +215,12 @@ function startServer(context, port) {
       const log = console.log.bind(console);
 
       watcher
-        .on("add", filePath => {
-          log("File", filePath, "has been added");
-        })
-        .on("addDir", file => {
-          log("Directory", file, "has been added");
-        })
         .on("change", filePath => {
           console.log("change " + filePath);
           setTimeout(() => handleChangeMD(filePath), 500);
         })
-        .on("unlink", filePath => {
-          log("File", filePath, "has been removed");
-        })
-        .on("unlinkDir", filePath => {
-          log("Directory", filePath, "has been removed");
-        })
-        .on("error", error => {
-          log("Error happened", error);
-        })
-        .on("ready", () => {
-          log("Initial scan complete. Ready for changes.");
-        })
         .on("raw", (event, filePath, details) => {
+          monitorWorkHome();
           log("Raw event info:", event, filePath, details);
         });
         loopCommit(1000 * 60 * 60 * 3);
