@@ -58,24 +58,32 @@ function commit(){
   }
 }
 let workHomeChangeCallBack;
+let timer = undefined;
 function monitorWorkHome(callback){
 
   if(callback) workHomeChangeCallBack = callback;
   let workHome = getWorkHome();
   if (fs.existsSync(workHome)) {
-    console.log(`git status ${new Date()}"`);
-    let ret = shell.exec(`git status`, {
-      cwd: workHome
-    },function(code,result){
-      console.log('result:');
-      console.log(code);
-      console.log(result);
-      if(result.indexOf('git add')>-1){
-        workHomeChangeCallBack("No Commit");
-      }else{
-        workHomeChangeCallBack("Commited");
-      }
-    });
+     if(timer){ clearTimeout(timer);}
+     
+      timer = setTimeout(function(){
+        timer = undefined;
+        console.log(`git status ${new Date()}"`);
+        let ret = shell.exec(`git status`, {
+          cwd: workHome
+        },function(code,result){
+          console.log('result:');
+          console.log(code);
+          console.log(result);
+          if(result.indexOf('git add')>-1){
+            workHomeChangeCallBack("No Commit");
+          }else{
+            workHomeChangeCallBack("Commited");
+          }
+        });
+      },3000);
+     
+
 
   } else {
     console.log(`${workHome} folder not exists!`);

@@ -38,15 +38,42 @@ function handleChangeMD(filePath) {
         } catch (e) {}
 
         const fileContent = fs.readFileSync(filePath, "utf8");
-        const allPostFiles = [];
+        /* handle images */
+        const data = fileContent.split("\n");
+        const afterProcessData = [];
+        const keepFiles = [];
+        for (let i = 0; i < data.length; i += 1) {
+          let line = data[i];
+
+          line = line.replace(/(!\[.*?\]\()(.*?)(\))/, (
+            match,
+            p1,
+            url,
+            p3 /* , offset, string */
+          ) => {
+            const draftPath = `${getDraftFolders()}${fileName}/${url}`;
+            const postPath = folder + url;
+            if (!url.match(/^http[s]?:\/\/.*?/) && fs.existsSync(draftPath) && !fs.existsSync(postPath)) {
+              fs.createReadStream(draftPath).pipe(
+                fs.createWriteStream(postPath)
+              );
+              console.log(`copy res from ${draftPath} to ${postPath}`);
+            }
+            keepFiles.push(url);
+            return p1 + url + p3;
+          });
+
+          afterProcessData.push(line);
+        }
+        /* handler images end */
 
         fs.writeFileSync(postFilePath, fileContent.trim());
         console.log(`postfm.attributes.lang:${postfm.attributes.lang}`);
 
-        allPostFiles.push(postFileName);
+        keepFiles.push(postFileName);
         shell
           .ls(folder)
-          .filter(it => allPostFiles.indexOf(it) === -1)
+          .filter(it => keepFiles.indexOf(it) === -1)
           .forEach(it => {
             console.log(`remove file ${folder}${it}`);
             shell.rm(folder + it);
