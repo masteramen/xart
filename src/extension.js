@@ -95,7 +95,7 @@ function activate(context) {
   context.subscriptions.push(
     vscode.commands.registerCommand("extension.commitStatus", () => {
       vscode.window
-      .showInformationMessage(`commit and push?`, 'Yes')
+      .showInformationMessage(`Commit and push?`, 'Yes')
       .then(selectedAction => {
         if (selectedAction === 'Yes') {
           commit();
