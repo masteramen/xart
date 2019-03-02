@@ -7,7 +7,12 @@ const glob = require("glob");
 const vscode = require("vscode");
 //const console = require("./logger");
 
-const { getWorkHome, postsFolder, getDraftFolders,getAutoCommitAndPush } = require("./config");
+const {
+  getWorkHome,
+  postsFolder,
+  getDraftFolders,
+  getAutoCommitAndPush
+} = require("./config");
 
 const { handleChangeMD } = require("./handlers");
 const md5 = require("./md5");
@@ -41,7 +46,7 @@ function getPostFile(dir) {
   return null;
 }
 
-function commit(){
+function commit() {
   let workHome = getWorkHome();
   if (fs.existsSync(workHome)) {
     console.log(`git commit -am "auto commit ${new Date()}"`);
@@ -59,39 +64,41 @@ function commit(){
 }
 let workHomeChangeCallBack;
 let timer = undefined;
-function monitorWorkHome(callback){
-
-  if(callback) workHomeChangeCallBack = callback;
+function monitorWorkHome(callback) {
+  if (callback) workHomeChangeCallBack = callback;
   let workHome = getWorkHome();
   if (fs.existsSync(workHome)) {
-     if(timer){ clearTimeout(timer);}
-     
-      timer = setTimeout(function(){
-        timer = undefined;
-        console.log(`git status ${new Date()}"`);
-        let ret = shell.exec(`git status`, {
+    if (timer) {
+      clearTimeout(timer);
+    }
+
+    timer = setTimeout(function() {
+      timer = undefined;
+      console.log(`git status ${new Date()}"`);
+      let ret = shell.exec(
+        `git status`,
+        {
           cwd: workHome
-        },function(code,result){
-          console.log('result:');
+        },
+        function(code, result) {
+          console.log("result:");
           console.log(code);
           console.log(result);
-          if(result.indexOf('git add')>-1){
+          if (result.indexOf("git add") > -1) {
             workHomeChangeCallBack("No Commit");
-          }else{
+          } else {
             workHomeChangeCallBack("Commited");
           }
-        });
-      },3000);
-     
-
-
+        }
+      );
+    }, 3000);
   } else {
     console.log(`${workHome} folder not exists!`);
   }
 }
 
 function loopCommit(time) {
-  if(getAutoCommitAndPush()==false)return;
+  if (getAutoCommitAndPush() == false) return;
   setTimeout(() => {
     commit();
   }, 10000);
@@ -175,14 +182,22 @@ function startServer(context, port) {
       console.log(`index list ${targetPath}`);
       const files = fs
         .readdirSync(targetPath)
+        .filter(f => {
+          return !f.startsWith(".");
+        })
         .map(f => {
-          console.log(`targetPath, f:${targetPath},${f}`);
-          const pf = getPostFile(path.join(targetPath, f));
-          if (pf)
-            return {
-              name: path.join(f, pf),
-              time: fs.statSync(path.join(targetPath, f, pf)).mtime.getTime()
-            };
+          try {
+            console.log(`targetPath, f:${targetPath},${f}`);
+            const pf = getPostFile(path.join(targetPath, f));
+            if (pf)
+              return {
+                name: path.join(f, pf),
+                time: fs.statSync(path.join(targetPath, f, pf)).mtime.getTime()
+              };
+          } catch (e) {
+            console.log(e);
+            return {};
+          }
         })
         .filter(f => f && f.name)
         .sort((a, b) => b.time - a.time)
@@ -231,7 +246,7 @@ function startServer(context, port) {
           monitorWorkHome();
           log("Raw event info:", event, filePath, details);
         });
-        loopCommit(1000 * 60 * 60 * 3);
+      loopCommit(1000 * 60 * 60 * 3);
       resolve();
     });
 
@@ -248,4 +263,4 @@ function startServer(context, port) {
   });
 }
 
-module.exports = {commit,startServer,monitorWorkHome};
+module.exports = { commit, startServer, monitorWorkHome };
