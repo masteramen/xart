@@ -69,6 +69,8 @@ source:  "${url}"
 fileName:  "${fileName}"
 lang:  "${lang}"
 published: ${published}
+categories: []
+tags: []
 ${permalink ? 'permalink: "' + permalink + '"' : ""}
 ---
 ${content.trim()}
