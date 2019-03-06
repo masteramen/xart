@@ -9,7 +9,7 @@ const vscode = require("vscode");
 
 const {
   getWorkHome,
-  postsFolder,
+  getPostFolders,
   getDraftFolders,
   getAutoCommitAndPush
 } = require("./config");
@@ -49,14 +49,33 @@ function getPostFile(dir) {
 function commit() {
   let workHome = getWorkHome();
   if (fs.existsSync(workHome)) {
-    console.log(`git commit -am "auto commit ${new Date()}"`);
-    shell.exec(`git add .`, {
-      cwd: workHome
+    shell.exec('git status',{ cwd: workHome },function(number, stdout, stderr){
+      console.log(stdout);
+      let contentLevel = stdout.indexOf(path.basename(getDraftFolders()))>-1?1:0;
+      contentLevel = stdout.indexOf(path.basename(getPostFolders()))>-1 ? 2 : contentLevel;
+      if(contentLevel){
+        
+        console.log(`git commit -am "auto commit ${new Date()}"`);
+        shell.exec(`git add .`, {cwd: workHome});
+        let ret = shell.exec(`git commit -am "auto commit ${new Date()}"`, {
+          cwd: workHome
+        });
+        shell.exec(`git push`, { cwd: workHome });
+        if(false && contentLevel==2){
+          shell.exec('git checkout publish',{ cwd: workHome });
+          shell.exec('git pull',{ cwd: workHome });
+          shell.exec('git merge --no-commit --no-ff master',{ cwd: workHome });
+          shell.exec(`git rm -r ${getDraftFolders()}`,{ cwd: workHome });
+          shell.exec(`git add ${getPostFolders()}`, {cwd: workHome});
+          shell.exec(`git commit -am "auto commit ${new Date()}"`, { cwd: workHome });
+          shell.exec(`git push`, { cwd: workHome });
+          shell.exec('git checkout master',{ cwd: workHome });
+        }
+      }
+
     });
-    let ret = shell.exec(`git commit -am "auto commit ${new Date()}"`, {
-      cwd: workHome
-    });
-    shell.exec(`git push`, { cwd: workHome });
+
+
     monitorWorkHome();
   } else {
     console.log(`${workHome} folder not exists!`);
