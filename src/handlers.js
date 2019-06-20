@@ -3,22 +3,20 @@ const fs = require("fs");
 const fm = require("front-matter");
 const shell = require("shelljs");
 const { open } = require("./vsfun");
-const { getPostFolders,getDraftFolders} = require("./config");
-
+const { getPostFolders, getDraftFolders } = require("./config");
 
 function handleChangeMD(filePath) {
-
   if (!filePath.endsWith(".md")) return;
   console.log(filePath);
   console.log(getDraftFolders());
-  if (filePath.indexOf("_posts") > -1 ) {
+  if (filePath.indexOf("_posts") > -1) {
     return;
   }
   console.log("handleChangeMD start");
   return (async () => {
     try {
       const postfm = fm(fs.readFileSync(filePath, "utf8"));
-      const { published, fileName} = postfm.attributes;
+      const { published, fileName } = postfm.attributes;
       console.log(filePath);
       console.log(JSON.stringify(postfm.attributes));
       let { date } = postfm.attributes;
@@ -53,7 +51,11 @@ function handleChangeMD(filePath) {
           ) => {
             const draftPath = `${getDraftFolders()}${fileName}/${url}`;
             const postPath = folder + url;
-            if (!url.match(/^http[s]?:\/\/.*?/) && fs.existsSync(draftPath) && !fs.existsSync(postPath)) {
+            if (
+              !url.match(/^http[s]?:\/\/.*?/) &&
+              fs.existsSync(draftPath) &&
+              !fs.existsSync(postPath)
+            ) {
               fs.createReadStream(draftPath).pipe(
                 fs.createWriteStream(postPath)
               );
@@ -82,12 +84,12 @@ function handleChangeMD(filePath) {
         console.log(`delete folder ${path.dirname(filePath)}`);
         shell.rm("-rf", path.dirname(filePath));
         return;
-      } 
+      }
 
       const { title } = postfm.attributes;
       let titleFileName = title + ".md";
       let newFilePath = path.dirname(filePath) + "/" + titleFileName;
-      console.log("new FilePath:${newFilePath");
+      console.log(`new FilePath:${newFilePath}`);
       if (path.basename(filePath) != titleFileName) {
         setTimeout(() => {
           shell.mv(filePath, newFilePath);

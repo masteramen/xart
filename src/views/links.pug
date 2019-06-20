@@ -1,0 +1,16 @@
+html
+  head
+    title= title
+  body
+    div Links
+          span  total:
+          em=  data.indexData.total
+    div 
+      - const prePage  = parseInt(data.curPage)-1
+      - const nextPage  = parseInt(data.curPage)+1
+      a(href='?page='+prePage)  Prev
+      a(href='?page='+nextPage)  Nex
+    ul
+        for linkItem in data.pageData.contents
+            li
+              a(href=linkItem.link,target='_blank')=linkItem.title

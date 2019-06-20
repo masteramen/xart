@@ -49,32 +49,37 @@ function getPostFile(dir) {
 function commit() {
   let workHome = getWorkHome();
   if (fs.existsSync(workHome)) {
-    shell.exec('git status',{ cwd: workHome },function(number, stdout, stderr){
+    shell.exec("git status", { cwd: workHome }, function(
+      number,
+      stdout,
+      stderr
+    ) {
       console.log(stdout);
-      let contentLevel = stdout.indexOf(path.basename(getDraftFolders()))>-1?1:0;
-      contentLevel = stdout.indexOf(path.basename(getPostFolders()))>-1 ? 2 : contentLevel;
-      if(contentLevel){
-        
+      let contentLevel =
+        stdout.indexOf(path.basename(getDraftFolders())) > -1 ? 1 : 0;
+      contentLevel =
+        stdout.indexOf(path.basename(getPostFolders())) > -1 ? 2 : contentLevel;
+      if (contentLevel) {
         console.log(`git commit -am "auto commit ${new Date()}"`);
-        shell.exec(`git add .`, {cwd: workHome});
+        shell.exec(`git add .`, { cwd: workHome });
         let ret = shell.exec(`git commit -am "auto commit ${new Date()}"`, {
           cwd: workHome
         });
         shell.exec(`git push`, { cwd: workHome });
-        if(false && contentLevel==2){
-          shell.exec('git checkout publish',{ cwd: workHome });
-          shell.exec('git pull',{ cwd: workHome });
-          shell.exec('git merge --no-commit --no-ff master',{ cwd: workHome });
-          shell.exec(`git rm -r ${getDraftFolders()}`,{ cwd: workHome });
-          shell.exec(`git add ${getPostFolders()}`, {cwd: workHome});
-          shell.exec(`git commit -am "auto commit ${new Date()}"`, { cwd: workHome });
+        if (false && contentLevel == 2) {
+          shell.exec("git checkout publish", { cwd: workHome });
+          shell.exec("git pull", { cwd: workHome });
+          shell.exec("git merge --no-commit --no-ff master", { cwd: workHome });
+          shell.exec(`git rm -r ${getDraftFolders()}`, { cwd: workHome });
+          shell.exec(`git add ${getPostFolders()}`, { cwd: workHome });
+          shell.exec(`git commit -am "auto commit ${new Date()}"`, {
+            cwd: workHome
+          });
           shell.exec(`git push`, { cwd: workHome });
-          shell.exec('git checkout master',{ cwd: workHome });
+          shell.exec("git checkout master", { cwd: workHome });
         }
       }
-
     });
-
 
     monitorWorkHome();
   } else {
@@ -245,6 +250,87 @@ function startServer(context, port) {
       }
 
       res.send(result);
+    });
+
+    app.get("/bm.js", (req, res) => {
+      console.log(req.query.url);
+      console.log(req.query.url);
+      const title = req.query.title;
+      const link = req.query.link;
+      console.log(title, link);
+      const workHome = getWorkHome();
+      const indexFile = workHome + "/links/index.json";
+      const targetPath = getDraftFolders();
+
+      // const filePath = path.join(targetPath, filename);
+      console.log(indexFile);
+      let json = { total: 0, pageSize: 20, curPage: 1 };
+
+      if (!fs.existsSync(indexFile) || !fs.statSync(indexFile).isFile()) {
+        try {
+          fs.mkdirSync(path.dirname(indexFile));
+        } catch (e) {}
+      } else {
+        json = JSON.parse(fs.readFileSync(indexFile).toString());
+      }
+      console.log(json);
+      let curPageIndex = Math.ceil(++json.total / json.pageSize);
+      let curPageDataFile = `${workHome}/links/p${curPageIndex}.js`;
+      let curPageData = { contents: [] };
+      json.curPage = curPageIndex;
+      if (fs.existsSync(curPageDataFile)) {
+        curPageData = JSON.parse(fs.readFileSync(curPageDataFile).toString());
+      }
+      curPageData.contents.push({ title: title, link: link });
+      fs.writeFileSync(indexFile, JSON.stringify(json));
+      fs.writeFileSync(curPageDataFile, JSON.stringify(curPageData));
+      let result =
+        '<html><head><script>alert("add success");window.history.go(-1);</script></head><body></body></html>';
+
+      res.send(result);
+    });
+
+    app.get("/links", (req, res) => {
+      console.log(req.query.page);
+      const workHome = getWorkHome();
+      const indexFile = workHome + "/links/index.json";
+
+      console.log(indexFile);
+      let json = { total: 0, pageSize: 20, curPage: 1 };
+
+      if (!fs.existsSync(indexFile) || !fs.statSync(indexFile).isFile()) {
+        try {
+          fs.mkdirSync(path.dirname(indexFile));
+        } catch (e) {}
+      } else {
+        json = JSON.parse(fs.readFileSync(indexFile).toString());
+      }
+      console.log(json);
+      let curPageIndex = req.query.page || json.curPage || 1;
+      let curPageDataFile = `${workHome}/links/p${curPageIndex}.js`;
+      console.log(curPageDataFile);
+      if (fs.existsSync(curPageDataFile)) {
+        let curPageData = JSON.parse(
+          fs.readFileSync(curPageDataFile).toString()
+        );
+        res.render("links", {
+          title: "Links",
+          data: {
+            indexData: json,
+            pageData: curPageData,
+            curPage: curPageIndex
+          }
+        });
+      } else {
+        res.render("links", {
+          title: "Links",
+          data: {
+            indexData: json,
+            pageData: { contents: {} },
+            curPage: curPageIndex
+          }
+        });
+      }
     });
 
     let server = app.listen(port, () => {

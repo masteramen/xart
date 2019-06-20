@@ -1,6 +1,7 @@
 html
   head
     script.
+        var acquireVsCodeApi;
         const vscode = acquireVsCodeApi&&acquireVsCodeApi();
 
         function myOpen(url,option){
@@ -17,6 +18,9 @@ html
           }
     title= title
   body
+    - const bmLink=`javascript:(function(){window.location = 'http://127.0.0.1:3999/bm.js?title='+encodeURIComponent(document.title)+'&link='+encodeURIComponent(location.href);})();`;
+    a(href=bmLink)=`Add to Favarite`
+    a(href='links')=`Links`
     ul
         for fileName in fileNames
             li
