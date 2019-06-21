@@ -1,5 +1,7 @@
 html
   head
+    style.
+      .nav{padding:5px;}
     script.
         var acquireVsCodeApi;
         const vscode = acquireVsCodeApi&&acquireVsCodeApi();
@@ -19,8 +21,8 @@ html
     title= title
   body
     - const bmLink=`javascript:(function(){window.location = 'http://127.0.0.1:3999/bm.js?title='+encodeURIComponent(document.title)+'&link='+encodeURIComponent(location.href);})();`;
-    a(href=bmLink)=`Add to Favarite`
-    a(href='links')=`Links`
+    a(href=bmLink).nav=`Add to Favarite`
+    a(href='links').nav=`Links`
     ul
         for fileName in fileNames
             li

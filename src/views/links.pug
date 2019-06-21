@@ -1,6 +1,8 @@
 html
   head
     title= title
+    style.
+      .nav{padding:5px;}
   body
     div Links
           span  total:
@@ -8,9 +10,15 @@ html
     div 
       - const prePage  = parseInt(data.curPage)-1
       - const nextPage  = parseInt(data.curPage)+1
-      a(href='?page='+prePage)  Prev
-      a(href='?page='+nextPage)  Nex
+      a(href='/').nav  HOME
+      a(href='?page='+prePage).nav  Prev
+      a(href='?page='+nextPage).nav  Nex
+    style.
+      ul {margin:0;padding:0;}
+      ul li {list-style-type:none;margin:2px 6px 0 0;}
+
     ul
         for linkItem in data.pageData.contents
             li
-              a(href=linkItem.link,target='_blank')=linkItem.title
+              span='#'+linkItem.id +' '
+              a(href=linkItem.link,target='_blank')= linkItem.title

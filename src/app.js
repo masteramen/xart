@@ -260,11 +260,10 @@ function startServer(context, port) {
       console.log(title, link);
       const workHome = getWorkHome();
       const indexFile = workHome + "/links/index.json";
-      const targetPath = getDraftFolders();
 
       // const filePath = path.join(targetPath, filename);
       console.log(indexFile);
-      let json = { total: 0, pageSize: 20, curPage: 1 };
+      let json = { total: 0, pageSize: 20, curPage: 1, lastLink: "" };
 
       if (!fs.existsSync(indexFile) || !fs.statSync(indexFile).isFile()) {
         try {
@@ -278,12 +277,15 @@ function startServer(context, port) {
       let curPageDataFile = `${workHome}/links/p${curPageIndex}.js`;
       let curPageData = { contents: [] };
       json.curPage = curPageIndex;
-      if (fs.existsSync(curPageDataFile)) {
-        curPageData = JSON.parse(fs.readFileSync(curPageDataFile).toString());
+      if (json.lastLink != link) {
+        json.lastLink = link;
+        if (fs.existsSync(curPageDataFile)) {
+          curPageData = JSON.parse(fs.readFileSync(curPageDataFile).toString());
+        }
+        curPageData.contents.push({ id: json.total, title: title, link: link });
+        fs.writeFileSync(indexFile, JSON.stringify(json));
+        fs.writeFileSync(curPageDataFile, JSON.stringify(curPageData));
       }
-      curPageData.contents.push({ title: title, link: link });
-      fs.writeFileSync(indexFile, JSON.stringify(json));
-      fs.writeFileSync(curPageDataFile, JSON.stringify(curPageData));
       let result =
         '<html><head><script>alert("add success");window.history.go(-1);</script></head><body></body></html>';
 
@@ -296,7 +298,7 @@ function startServer(context, port) {
       const indexFile = workHome + "/links/index.json";
 
       console.log(indexFile);
-      let json = { total: 0, pageSize: 20, curPage: 1 };
+      let json = { total: 0, pageSize: 40, curPage: 1 };
 
       if (!fs.existsSync(indexFile) || !fs.statSync(indexFile).isFile()) {
         try {
