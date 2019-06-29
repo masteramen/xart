@@ -261,35 +261,65 @@ function startServer(context, port) {
       const workHome = getWorkHome();
       const indexFile = workHome + "/links/index.json";
 
-      // const filePath = path.join(targetPath, filename);
-      console.log(indexFile);
-      let json = { total: 0, pageSize: 20, curPage: 1, lastLink: "" };
+      shell.exec(
+        `git pull --rebase`,
+        {
+          cwd: workHome
+        },
+        function(code, result) {
+          console.log("result:");
+          console.log(code);
+          console.log(result);
 
-      if (!fs.existsSync(indexFile) || !fs.statSync(indexFile).isFile()) {
-        try {
-          fs.mkdirSync(path.dirname(indexFile));
-        } catch (e) {}
-      } else {
-        json = JSON.parse(fs.readFileSync(indexFile).toString());
-      }
-      console.log(json);
-      let curPageIndex = Math.ceil(++json.total / json.pageSize);
-      let curPageDataFile = `${workHome}/links/p${curPageIndex}.js`;
-      let curPageData = { contents: [] };
-      json.curPage = curPageIndex;
-      if (json.lastLink != link) {
-        json.lastLink = link;
-        if (fs.existsSync(curPageDataFile)) {
-          curPageData = JSON.parse(fs.readFileSync(curPageDataFile).toString());
+          // const filePath = path.join(targetPath, filename);
+          console.log(indexFile);
+          let json = { total: 0, pageSize: 20, curPage: 1, lastLink: "" };
+
+          if (!fs.existsSync(indexFile) || !fs.statSync(indexFile).isFile()) {
+            try {
+              fs.mkdirSync(path.dirname(indexFile));
+            } catch (e) {}
+          } else {
+            json = JSON.parse(fs.readFileSync(indexFile).toString());
+          }
+          console.log(json);
+          let curPageIndex = Math.ceil(++json.total / json.pageSize);
+          let curPageDataFile = `${workHome}/links/p${curPageIndex}.js`;
+          let curPageData = { contents: [] };
+          json.curPage = curPageIndex;
+          if (json.lastLink != link) {
+            json.lastLink = link;
+            if (fs.existsSync(curPageDataFile)) {
+              curPageData = JSON.parse(
+                fs.readFileSync(curPageDataFile).toString()
+              );
+            }
+            curPageData.contents.push({
+              id: json.total,
+              title: title,
+              link: link
+            });
+            fs.writeFileSync(indexFile, JSON.stringify(json));
+            fs.writeFileSync(curPageDataFile, JSON.stringify(curPageData));
+          }
+
+          shell.exec(
+            `git add ${workHome}/links && git commit -am 'add links' && git push`,
+            {
+              cwd: workHome
+            },
+            function(code, result) {
+              console.log(code);
+              console.log(result);
+            }
+          );
+
+          let s =
+            '<html><head><script>alert("add success");window.history.go(-1);</script></head><body></body></html>';
+
+          res.send(s);
         }
-        curPageData.contents.push({ id: json.total, title: title, link: link });
-        fs.writeFileSync(indexFile, JSON.stringify(json));
-        fs.writeFileSync(curPageDataFile, JSON.stringify(curPageData));
-      }
-      let result =
-        '<html><head><script>alert("add success");window.history.go(-1);</script></head><body></body></html>';
-
-      res.send(result);
+      );
     });
 
     app.get("/links", (req, res) => {
