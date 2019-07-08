@@ -55,10 +55,7 @@ function commit() {
       stderr
     ) {
       console.log(stdout);
-      let contentLevel =
-        stdout.indexOf(path.basename(getDraftFolders())) > -1 ? 1 : 0;
-      contentLevel =
-        stdout.indexOf(path.basename(getPostFolders())) > -1 ? 2 : contentLevel;
+      let contentLevel = stdout.indexOf(path.basename(getPostFolders())) > -1 ? 2 : 1;
       if (contentLevel) {
         console.log(`git commit -am "auto commit ${new Date()}"`);
         shell.exec(`git add .`, { cwd: workHome });
