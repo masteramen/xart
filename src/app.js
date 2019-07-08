@@ -250,11 +250,10 @@ function startServer(context, port) {
     });
 
     app.get("/bm.js", (req, res) => {
-      console.log(req.query.url);
-      console.log(req.query.url);
+
       const title = req.query.title;
       const link = req.query.link;
-      console.log(title, link);
+      console.log(`${title}, ${link}`);
       const workHome = getWorkHome();
       const indexFile = workHome + "/links/index.json";
 
@@ -264,7 +263,6 @@ function startServer(context, port) {
           cwd: workHome
         },
         function(code, result) {
-          console.log("result:");
           console.log(code);
           console.log(result);
 
@@ -291,7 +289,7 @@ function startServer(context, port) {
                 fs.readFileSync(curPageDataFile).toString()
               );
             }
-            curPageData.contents.push({
+            curPageData.contents.unshift({
               id: json.total,
               title: title,
               link: link
@@ -299,18 +297,18 @@ function startServer(context, port) {
             fs.writeFileSync(indexFile, JSON.stringify(json));
             fs.writeFileSync(curPageDataFile, JSON.stringify(curPageData));
           }
+          console.log(`git add ${workHome}/links && git commit -am 'add links for ${title}'`);
 
-          shell.exec(
-            `git add ${workHome}/links && git commit -am 'add links' && git push`,
-            {
-              cwd: workHome
-            },
-            function(code, result) {
-              console.log(code);
-              console.log(result);
-            }
-          );
+          shell.exec(`git add links`, { cwd: workHome }, function(number,stdout,stderr) { 
+            console.log(`${number},${stdout},${stderr}`) ;
+            console.log('commit')
+            shell.exec(`git commit -am "add links for ${title}"`, { cwd: workHome }, function(number,stdout,stderr) {
+               console.log(`${number},${stdout},${stderr}`) });
+               console.log('push')
+            shell.exec(`git push`, { cwd: workHome }, function(number,stdout,stderr){ console.log(`${number},${stdout},${stderr}`) });
 
+        });
+         // shell.exec(`git status`, { cwd: workHome }, function(number,stdout,stderr){ console.log(`${number},${stdout},${stderr}`) });
           let s =
             '<html><head><script>alert("add success");window.history.go(-1);</script></head><body></body></html>';
 
